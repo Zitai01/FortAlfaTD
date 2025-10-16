@@ -52,6 +52,9 @@ AFortAlfaTDCharacter::AFortAlfaTDCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	//
+
 }
 
 void AFortAlfaTDCharacter::BeginPlay()
@@ -71,4 +74,10 @@ void AFortAlfaTDCharacter::Tick(float DeltaSeconds)
 UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
 {
 	return  FortAbilitySystemComp;
+}
+
+void AFortAlfaTDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
 }

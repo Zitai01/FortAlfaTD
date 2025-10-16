@@ -31,7 +31,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
-	
+//	void MoveForward(float val);
+//	void MoveRight(float val);
+//	void PrimaryAttack();
+//	void Jump();
+//	void PrimaryInteract();
+//	void PrimaryAttack_TimeElapsed();
 public:
 
 	/** Constructor */
@@ -49,7 +54,8 @@ public:
 	/** Returns the Camera Boom component **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
-
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 };
