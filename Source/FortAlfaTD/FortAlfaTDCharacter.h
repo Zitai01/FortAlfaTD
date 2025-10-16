@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "FortAlfaTDCharacter.generated.h"
 
@@ -10,7 +11,7 @@
  *  A controllable top-down perspective character
  */
 UCLASS(abstract)
-class AFortAlfaTDCharacter : public ACharacter
+class AFortAlfaTDCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -24,6 +25,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
+protected:
+	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
+	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
+
+	UPROPERTY()
+	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
+	
 public:
 
 	/** Constructor */
@@ -41,5 +49,8 @@ public:
 	/** Returns the Camera Boom component **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
+
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 };
 
