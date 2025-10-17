@@ -12,9 +12,9 @@
 	GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
-/**
- * 
- */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAttributeChangedEvent, UAttributeSet*, AttributeSet, float, OldValue, float, NewValue);
+
 UCLASS()
 class FORTALFATD_API UFortHealthAttributeSet : public UAttributeSet
 {
@@ -23,13 +23,19 @@ class FORTALFATD_API UFortHealthAttributeSet : public UAttributeSet
 	public:
 	UFortHealthAttributeSet();
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
-	
+
+	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Replicated)
 	FGameplayAttributeData Health;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Replicated)
 	FGameplayAttributeData MaxHealth;
 
+
+	UPROPERTY(BlueprintAssignable)
+	FAttributeChangedEvent OnHealthChanged;
+	
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet,Health);
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet,MaxHealth);
 	
