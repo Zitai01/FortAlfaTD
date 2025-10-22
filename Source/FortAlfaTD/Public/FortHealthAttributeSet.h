@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
+#include "GameplayEffectExtension.h"
 #include "FortAbilitySystemComponent.h"
 #include "FortHealthAttributeSet.generated.h"
 
@@ -26,7 +27,9 @@ class FORTALFATD_API UFortHealthAttributeSet : public UAttributeSet
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Replicated)
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Replicated, meta = (HideFromModifiers))
 	FGameplayAttributeData Health;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Replicated)
@@ -35,7 +38,11 @@ class FORTALFATD_API UFortHealthAttributeSet : public UAttributeSet
 
 	UPROPERTY(BlueprintAssignable)
 	FAttributeChangedEvent OnHealthChanged;
+
+	UPROPERTY(VisibleAnywhere)
+	FGameplayAttributeData Damage;
 	
+	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet, Damage);
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet,Health);
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet,MaxHealth);
 	

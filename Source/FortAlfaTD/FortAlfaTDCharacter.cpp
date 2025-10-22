@@ -79,5 +79,7 @@ UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
 void AFortAlfaTDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	const FTopLevelAssetPath EnumName("/Script/FortAlfaTD.EMyAbilitySlotsEnum");
+	FGameplayAbilityInputBinds Binds("ConfirmTargeting", "CancelTargeting", EnumName);
+	FortAbilitySystemComp->BindAbilityActivationToInputComponent(PlayerInputComponent, Binds);
 }
