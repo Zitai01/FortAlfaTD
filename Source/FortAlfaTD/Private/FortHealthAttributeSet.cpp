@@ -48,6 +48,8 @@ void UFortHealthAttributeSet::PostAttributeChange(const FGameplayAttribute& Attr
 void UFortHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
+	UE_LOG(LogTemp, Warning, TEXT("PostApply: Gameplay Effect '%s' effect"), *Data.EffectSpec.Def->GetClass()->GetName());
+
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
 	{
 		// Convert into -Health and then clamp
@@ -60,8 +62,23 @@ void UFortHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMod
 		{
 			// Set the new health after clamping to min-max
 			SetHealth(NewHealthValue);
+			// Calculate 'actual' damage applied that respects min and max health
+			const float DamageNumber = OldHealthValue - NewHealthValue;
+			if (UAbilitySystemComponent* OwningAbilitySystemComponent = GetValid(GetOwningAbilitySystemComponent()))
+			{
+				// Broadcast a 'damage number' gameplay cue on the owning actor. Triggered on server, executes on all clients.
+				const FGameplayTag DamageCueTag = FGameplayTag::RequestGameplayTag(FName("GameplayCue.DamageNumber"), /*ErrorIfNotFound=*/true);
+				FGameplayCueParameters DamageCueParams;
+				DamageCueParams.NormalizedMagnitude = 1.f;
+				DamageCueParams.RawMagnitude = DamageNumber;
+				OwningAbilitySystemComponent->ExecuteGameplayCue(DamageCueTag, DamageCueParams);
+			}
+
 		}
- 
+		
+
+
+		
 		// Clear the meta attribute that temporarily held damage
 		SetDamage(0.0f);
 	}
