@@ -36,6 +36,19 @@ void UFortHealthAttributeSet::PostAttributeChange(const FGameplayAttribute& Attr
 	if (Attribute == GetHealthAttribute())
 	{
 		OnHealthChanged.Broadcast(this, OldValue, NewValue);
+		if (NewValue <= 0.0f && OldValue > 0.0f)
+		{
+			if (UAbilitySystemComponent* OwningAbilitySystemComponent = GetValid(GetOwningAbilitySystemComponent()) )
+			{
+
+				
+				if (AActor* OwnerActor = GetOwningActor())
+				{
+					const FGameplayTag DeathTag = FGameplayTag::RequestGameplayTag(FName("State.Death.Start"), /*ErrorIfNotFound=*/true);
+					OwningAbilitySystemComponent->HandleGameplayEvent(DeathTag,nullptr);
+				}
+			}			
+		}
 	}
 	else if (Attribute == GetMaxHealthAttribute())
 	{
@@ -43,6 +56,7 @@ void UFortHealthAttributeSet::PostAttributeChange(const FGameplayAttribute& Attr
 		const float CurrentHealth = GetHealth();
 		OnHealthChanged.Broadcast(this, CurrentHealth, CurrentHealth);
 	}
+
 }
 
 void UFortHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -57,7 +71,8 @@ void UFortHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMod
 		const float OldHealthValue = GetHealth();
 		const float MaxHealthValue = GetMaxHealth();
 		const float NewHealthValue = FMath::Clamp(OldHealthValue - DamageValue, 0.0f, MaxHealthValue);
- 
+
+
 		if (OldHealthValue != NewHealthValue)
 		{
 			// Set the new health after clamping to min-max
