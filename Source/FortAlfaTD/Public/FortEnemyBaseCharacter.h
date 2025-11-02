@@ -7,14 +7,14 @@
 #include "GameFramework/Character.h"
 #include "FortEnemyBaseCharacter.generated.h"
 
-UCLASS()
+UCLASS(abstract)
 class FORTALFATD_API AFortEnemyBaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AFortEnemyBaseCharacter();
+
 
 protected:
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
@@ -28,7 +28,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	AFortEnemyBaseCharacter();
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
