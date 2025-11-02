@@ -44,8 +44,9 @@ void UFortHealthAttributeSet::PostAttributeChange(const FGameplayAttribute& Attr
 				
 				if (AActor* OwnerActor = GetOwningActor())
 				{
+					const  FGameplayEventData GameplayData;
 					const FGameplayTag DeathTag = FGameplayTag::RequestGameplayTag(FName("State.Death.Start"), /*ErrorIfNotFound=*/true);
-					OwningAbilitySystemComponent->HandleGameplayEvent(DeathTag,nullptr);
+					OwningAbilitySystemComponent->HandleGameplayEvent(DeathTag,&GameplayData);
 				}
 			}			
 		}
