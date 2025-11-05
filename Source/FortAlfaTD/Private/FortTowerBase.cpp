@@ -4,7 +4,7 @@
 #include "FortTowerBase.h"
 #include "AbilitySystemComponent.h"
 #include "FortAbilitySystemComponent.h"
-
+#include "FortHealthAttributeSet.h"
 // Sets default values
 AFortTowerBase::AFortTowerBase()
 {
