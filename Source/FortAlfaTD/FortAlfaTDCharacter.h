@@ -31,12 +31,17 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
-//	void MoveForward(float val);
-//	void MoveRight(float val);
-//	void PrimaryAttack();
-//	void Jump();
-//	void PrimaryInteract();
-//	void PrimaryAttack_TimeElapsed();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mech")
+	USkeletalMeshComponent* BodyMesh;
+
+	// Additional parts
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mech")
+	USkeletalMeshComponent* ArmMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mech")
+	USkeletalMeshComponent* LegMesh;
+
 public:
 
 	/** Constructor */

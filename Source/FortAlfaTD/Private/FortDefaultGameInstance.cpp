@@ -3,3 +3,12 @@
 
 #include "FortDefaultGameInstance.h"
 
+ void UFortDefaultGameInstance::OnSessionComplete(bool succeed)
+{
+	
+}
+
+void UFortDefaultGameInstance::StartSession()
+ {
+	
+ }
