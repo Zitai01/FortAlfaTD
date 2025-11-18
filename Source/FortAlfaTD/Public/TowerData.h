@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ScalableFloat.h"
 #include "Engine/DataAsset.h"
 #include "TowerData.generated.h"
 
@@ -21,6 +22,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
 	float Damage = 10.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
+	FScalableFloat DamageMultiplier = 1.f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
 	float FireRate = 1.f;
 

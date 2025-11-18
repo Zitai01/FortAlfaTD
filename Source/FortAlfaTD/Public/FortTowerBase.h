@@ -23,8 +23,17 @@ protected:
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
 	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tower Info")
+	FName TowerName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tower Info")
+	int32 TowerLevel = 1;
+	
 	UPROPERTY()
 	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
+
+	UPROPERTY()
+	TObjectPtr<class UFortTowerAttributeSet> TowerAttributeSet;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

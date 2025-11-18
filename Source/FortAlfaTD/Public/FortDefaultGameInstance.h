@@ -25,8 +25,11 @@ public:
 	int32 SessionNumber = 0;
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 Mineral = 0;
-
+	int32 Mineral = 100;
+	
+	UPROPERTY(BlueprintReadWrite)
+	int32 CurrentLevel = 1;
+	
 	UPROPERTY(BlueprintReadWrite)
 	int32 Currency = 0;
 	

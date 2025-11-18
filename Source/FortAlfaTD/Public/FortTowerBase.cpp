@@ -5,6 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "FortAbilitySystemComponent.h"
 #include "FortHealthAttributeSet.h"
+#include "FortTowerAttributeSet.h"
 // Sets default values
 AFortTowerBase::AFortTowerBase()
 {
@@ -12,6 +13,7 @@ AFortTowerBase::AFortTowerBase()
 	PrimaryActorTick.bCanEverTick = false;
 	FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
 	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
+	TowerAttributeSet = CreateDefaultSubobject<UFortTowerAttributeSet>(TEXT("TowerAttributeSet"));
 }
 
 // Called when the game starts or when spawned

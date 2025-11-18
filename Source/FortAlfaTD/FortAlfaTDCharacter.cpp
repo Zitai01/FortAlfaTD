@@ -70,7 +70,7 @@ void AFortAlfaTDCharacter::Tick(float DeltaSeconds)
 
 	// stub
 }
-
+ 
 UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
 {
 	return  FortAbilitySystemComp;

@@ -12,6 +12,7 @@ AFortEnemyBaseCharacter::AFortEnemyBaseCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
 	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
+
 }
 
 // Called when the game starts or when spawned
@@ -19,6 +20,12 @@ void AFortEnemyBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	FortAbilitySystemComp->InitAbilityActorInfo(this,this);
+	FGameplayTag EnemyTag = FGameplayTag::RequestGameplayTag(FName("Faction.Enemy"));
+	
+	if (FortAbilitySystemComp)
+	{
+		FortAbilitySystemComp->AddLooseGameplayTag(EnemyTag);
+	}
 }
 
 // Called every frame
