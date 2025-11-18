@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffectTypes.h"
 #include "GameFramework/Actor.h"
 #include "FortProjectileBase.generated.h"
 
@@ -23,15 +24,18 @@ protected:
 
 public:	
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TSubclassOf<UGameplayEffect> DamageGameplayEffect;
+	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn = true))
+	FGameplayEffectSpecHandle DamageEffectSpecHandle;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComp;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	class UProjectileMovementComponent* ProjectileMovementComp;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UNiagaraComponent> NiagaraComp;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UStaticMesh> StaticMeshComp;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	class USphereComponent* AttackRange;
 };

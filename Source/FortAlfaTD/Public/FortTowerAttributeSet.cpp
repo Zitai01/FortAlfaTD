@@ -6,6 +6,6 @@
 UFortTowerAttributeSet::UFortTowerAttributeSet()
 {
 	InitAttackDamage(1);
-	InitAttackRange(100);
+	InitAttackRange(1000);
 	InitAttackSpeed(100);
 }

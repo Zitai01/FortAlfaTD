@@ -7,6 +7,11 @@
 #include "GameFramework/Pawn.h"
 #include "FortTowerBase.generated.h"
 
+class USphereComponent;
+class UAbilitySystemComponent;
+class UGameplayAbility;
+
+
 UCLASS()
 class FORTALFATD_API AFortTowerBase : public APawn,  public IAbilitySystemInterface
 {
@@ -34,6 +39,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UFortTowerAttributeSet> TowerAttributeSet;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	class USphereComponent* AttackRange;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

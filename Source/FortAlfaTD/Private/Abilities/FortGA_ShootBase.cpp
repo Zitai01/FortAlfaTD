@@ -7,3 +7,8 @@ UFortGA_ShootBase::UFortGA_ShootBase()
 {
 	
 }
+
+void UFortGA_ShootBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo * ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData * TriggerEventData)
+{
+	
+}

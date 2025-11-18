@@ -6,6 +6,7 @@
 #include "FortAbilitySystemComponent.h"
 #include "FortHealthAttributeSet.h"
 #include "FortTowerAttributeSet.h"
+#include "Components/SphereComponent.h"
 // Sets default values
 AFortTowerBase::AFortTowerBase()
 {
@@ -14,6 +15,7 @@ AFortTowerBase::AFortTowerBase()
 	FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
 	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
 	TowerAttributeSet = CreateDefaultSubobject<UFortTowerAttributeSet>(TEXT("TowerAttributeSet"));
+	AttackRange = CreateDefaultSubobject<USphereComponent>(TEXT("AttackRange"));
 }
 
 // Called when the game starts or when spawned
