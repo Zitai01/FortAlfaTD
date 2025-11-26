@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "Abilities/FortGA_ShootBase.h"
 #include "GameFramework/Pawn.h"
 #include "FortTowerBase.generated.h"
 
+class AFortEnemyBaseCharacter;
 class USphereComponent;
 class UAbilitySystemComponent;
 class UGameplayAbility;
@@ -18,13 +20,25 @@ class FORTALFATD_API AFortTowerBase : public APawn,  public IAbilitySystemInterf
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
-	AFortTowerBase();
 
+	AFortTowerBase();
+	
+
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	bool IsEnemyValid(APawn* Enemy);
+	
+	APawn* FindNearestEnemy();
+	
+	void RotateToFaceEnemy(float DeltaTime);
+	
+	void TryShoot(float DeltaTime);
+	
+	void TowerUpdate();
+	
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
 	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
 
@@ -40,15 +54,46 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UFortTowerAttributeSet> TowerAttributeSet;
 
+	UPROPERTY()
+	TArray<APawn*> EnemiesInRange;
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class USphereComponent* AttackRange;
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	USphereComponent* AttackRangeSphere;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Tower")
+	float AttackRange = 1500.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Tower")
+	float AttackSpeed = 1.0f; // seconds between shots
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	AFortEnemyBaseCharacter* CurrentTarget = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UFortGA_ShootBase> ShootAbility;
+	
+	float TimeSinceLastShot = 0.f;
+	FTimerHandle TowerLogicTimerHandle;
+public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	UFUNCTION()
+	void OnEnemyEnterRange(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnEnemyExitRange(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
+	
 };
