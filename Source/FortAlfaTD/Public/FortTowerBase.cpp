@@ -12,11 +12,18 @@
 AFortTowerBase::AFortTowerBase()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMesh"));
+	RootComponent = BaseMesh;
+	MountMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MountMesh"));
+	MountMesh->SetupAttachment(BaseMesh);
+	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TurretMesh"));
+	TurretMesh->SetupAttachment(MountMesh);
 	FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
 	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
 	TowerAttributeSet = CreateDefaultSubobject<UFortTowerAttributeSet>(TEXT("TowerAttributeSet"));
 	AttackRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AttackRangeSphere"));
+	
 	AttackRangeSphere->SetupAttachment(RootComponent);
 	AttackRange = TowerAttributeSet->GetAttackRange();
 	AttackSpeed = TowerAttributeSet->GetAttackSpeed();
@@ -36,6 +43,17 @@ void AFortTowerBase::BeginPlay()
 	AttackRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyEnterRange);
 	AttackRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyExitRange);
 	GetWorld()->GetTimerManager().SetTimer(TowerLogicTimerHandle, this, &AFortTowerBase::TowerUpdate,0.05f,true);
+	if (BaseMesh->DoesSocketExist("Mount_Top") && MountMesh->GetStaticMesh())
+	{
+		MountMesh->AttachToComponent(
+			BaseMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Mount_Top");
+	}
+	if (MountMesh->DoesSocketExist("Mount_Weapon_R") && TurretMesh->GetStaticMesh())
+	{
+		TurretMesh->AttachToComponent(
+			MountMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Mount_Weapon_R");
+	} 
+
 }
 
 // Called to bind functionality to input
@@ -47,9 +65,17 @@ void AFortTowerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AFortTowerBase::TowerUpdate()
 {
-	// 1. Pick/validate current target
-	// 2. Rotate toward enemy
-	// 3. Fire when angle is right
+	float DeltaTime = 0.05f;
+	
+	if (!IsEnemyValid(CurrentTarget))
+	{
+		CurrentTarget = FindNearestEnemy();
+		if (!IsEnemyValid(CurrentTarget))
+			return;
+	}
+	
+	RotateToFaceEnemy(DeltaTime);
+	TryShoot(DeltaTime);
 }
 
 UAbilitySystemComponent* AFortTowerBase::GetAbilitySystemComponent() const
@@ -65,7 +91,7 @@ void AFortTowerBase::OnEnemyEnterRange(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	if (APawn* Enemy = Cast<AFortEnemyBaseCharacter>(OtherActor))
+	if (AFortEnemyBaseCharacter* Enemy = Cast<AFortEnemyBaseCharacter>(OtherActor))
 	{
 		EnemiesInRange.Add(Enemy);
 	}
@@ -77,7 +103,7 @@ void AFortTowerBase::OnEnemyExitRange(
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	if (APawn* Enemy = Cast<AFortEnemyBaseCharacter>(OtherActor))
+	if (AFortEnemyBaseCharacter* Enemy = Cast<AFortEnemyBaseCharacter>(OtherActor))
 	{
 		EnemiesInRange.Remove(Enemy);
 		if (CurrentTarget == Enemy)
@@ -99,18 +125,21 @@ bool AFortTowerBase::IsEnemyValid(APawn* Enemy)
 		if (ASC->HasMatchingGameplayTag(DeadTag))
 			return false;
 	}
-
+	if (!Cast<AFortEnemyBaseCharacter>(Enemy))
+	{
+		return false;
+	}
 	return true;
 }
 
-APawn* AFortTowerBase::FindNearestEnemy()
+AFortEnemyBaseCharacter* AFortTowerBase::FindNearestEnemy()
 {
-	APawn* Nearest = nullptr;
+	AFortEnemyBaseCharacter* Nearest = nullptr;
 	float Closest = FLT_MAX;
 
 	for (int32 i = EnemiesInRange.Num() - 1; i >= 0; --i)
 	{
-		APawn* Enemy = EnemiesInRange[i];
+		AFortEnemyBaseCharacter* Enemy = EnemiesInRange[i];
 
 		if (!IsEnemyValid(Enemy))
 		{
@@ -146,8 +175,8 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 		DeltaTime,
 		Speed
 	);
-
-	SetActorRotation(NewRot);
+	NewRot.Yaw -= 90.0f;
+	MountMesh->SetWorldRotation(NewRot);
 }
 
 void AFortTowerBase::TryShoot(float DeltaTime)

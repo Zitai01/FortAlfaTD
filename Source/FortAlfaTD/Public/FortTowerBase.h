@@ -22,7 +22,8 @@ class FORTALFATD_API AFortTowerBase : public APawn,  public IAbilitySystemInterf
 public:
 
 	AFortTowerBase();
-	
+
+
 
 	
 protected:
@@ -31,7 +32,7 @@ protected:
 
 	bool IsEnemyValid(APawn* Enemy);
 	
-	APawn* FindNearestEnemy();
+	AFortEnemyBaseCharacter* FindNearestEnemy();
 	
 	void RotateToFaceEnemy(float DeltaTime);
 	
@@ -55,7 +56,19 @@ protected:
 	TObjectPtr<class UFortTowerAttributeSet> TowerAttributeSet;
 
 	UPROPERTY()
-	TArray<APawn*> EnemiesInRange;
+	TArray<AFortEnemyBaseCharacter*> EnemiesInRange;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	UStaticMeshComponent* BaseMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	UStaticMeshComponent* MountMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	UStaticMeshComponent* TurretMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	USceneComponent* MuzzlePoint;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	USphereComponent* AttackRangeSphere;
@@ -65,10 +78,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Tower")
 	float AttackSpeed = 1.0f; // seconds between shots
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
-	AFortEnemyBaseCharacter* CurrentTarget = nullptr;
-
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UFortGA_ShootBase> ShootAbility;
 	
@@ -95,5 +105,7 @@ public:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	AFortEnemyBaseCharacter* CurrentTarget = nullptr;
 };

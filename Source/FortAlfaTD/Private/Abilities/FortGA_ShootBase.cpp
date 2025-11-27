@@ -12,3 +12,8 @@ void UFortGA_ShootBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	
 }
+
+void PerformShoot(class AFortTowerBase* Tower)
+{
+	
+}
