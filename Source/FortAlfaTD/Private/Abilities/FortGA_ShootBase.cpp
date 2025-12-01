@@ -2,18 +2,107 @@
 
 
 #include "Abilities/FortGA_ShootBase.h"
+#include "FortEnemyBaseCharacter.h"
+#include "FortHealthAttributeSet.h"
+#include "FortTowerBase.h"
+#include "Projectiles/FortProjectileBase.h"
+#include "FortTowerAttributeSet.h"
 
 UFortGA_ShootBase::UFortGA_ShootBase()
 {
 	
 }
 
-void UFortGA_ShootBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo * ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData * TriggerEventData)
+void UFortGA_ShootBase::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData)
 {
-	
+	if (!ActorInfo || !ActorInfo->AvatarActor.IsValid())
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
+
+	AFortTowerBase* Tower = Cast<AFortTowerBase>(ActorInfo->AvatarActor.Get());
+	if (!Tower || !Tower->CurrentTarget)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
+
+	// Commit cost/cooldown
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
+
+	// Shoot logic
+	PerformShoot(Tower);
+
+	// End ability immediately
+	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
-void PerformShoot(class AFortTowerBase* Tower)
+void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 {
-	
+	AFortEnemyBaseCharacter* Target = Tower->CurrentTarget;
+	if (!Target) return;
+
+	UFortTowerAttributeSet* Stats = Tower->GetTowerAttributes();
+	float Damage = Stats ? Stats->GetAttackDamage() : 10.f;
+
+	// Muzzle location
+	FVector MuzzleLoc;
+	FRotator MuzzleRot;
+
+	if (Tower->GetTurretMesh() && Tower->GetTurretMesh()->DoesSocketExist("Barrel_End"))
+	{
+		MuzzleLoc = Tower->GetTurretMesh()->GetSocketLocation("Barrel_End");
+		MuzzleRot = Tower->GetTurretMesh()->GetSocketRotation("Barrel_End");
+	}
+	else
+	{
+		// fallback
+		MuzzleLoc = Tower->GetActorLocation();
+		MuzzleRot = (Target->GetActorLocation() - MuzzleLoc).Rotation();
+	}
+
+	// If instant hit mode
+	if (bUseInstantHit)
+	{
+		// Apply damage instantly
+		if (UAbilitySystemComponent* EnemyASC = Target->GetAbilitySystemComponent())
+		{
+			// You can apply a real GameplayEffect instead — I can write that too
+			EnemyASC->ApplyModToAttributeUnsafe(
+				FGameplayAttribute(UFortHealthAttributeSet::GetHealthAttribute()),
+				EGameplayModOp::Additive,
+				-Damage
+			);
+		}
+		return;
+	}
+
+	// Spawn projectile version
+	if (ProjectileClass)
+	{
+		FActorSpawnParameters Params;
+		Params.Owner = Tower;
+
+		AFortProjectileBase* Projectile = Tower->GetWorld()->SpawnActor<AFortProjectileBase>(
+			ProjectileClass,
+			MuzzleLoc,
+			MuzzleRot,
+			Params
+		);
+
+		if (Projectile)
+		{
+			Projectile->SetTarget(Target);
+			Projectile->SetDamage(Damage);
+		}
+	}
 }

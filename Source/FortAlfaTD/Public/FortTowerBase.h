@@ -72,12 +72,6 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	USphereComponent* AttackRangeSphere;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Tower")
-	float AttackRange = 1500.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Tower")
-	float AttackSpeed = 1.0f; // seconds between shots
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UFortGA_ShootBase> ShootAbility;
@@ -89,6 +83,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	FORCEINLINE UFortTowerAttributeSet* GetTowerAttributes() const { return TowerAttributeSet; }
+
+public:
+	FORCEINLINE UStaticMeshComponent* GetTurretMesh() const { return TurretMesh; }
+
 
 	UFUNCTION()
 	void OnEnemyEnterRange(

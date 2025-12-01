@@ -25,9 +25,8 @@ AFortTowerBase::AFortTowerBase()
 	AttackRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AttackRangeSphere"));
 	
 	AttackRangeSphere->SetupAttachment(RootComponent);
-	AttackRange = TowerAttributeSet->GetAttackRange();
-	AttackSpeed = TowerAttributeSet->GetAttackSpeed();
-	AttackRangeSphere->InitSphereRadius(AttackRange);
+	float range = TowerAttributeSet->GetAttackRange();
+	AttackRangeSphere->InitSphereRadius(range);
 	AttackRangeSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	AttackRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);

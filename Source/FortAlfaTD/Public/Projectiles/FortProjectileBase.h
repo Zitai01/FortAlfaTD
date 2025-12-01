@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "FortProjectileBase.generated.h"
 
 class UNiagaraComponent;
@@ -21,6 +24,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	float Damage = 10.f;
 
 public:	
 
@@ -28,14 +32,33 @@ public:
 	FGameplayEffectSpecHandle DamageEffectSpecHandle;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComp;
+	UProjectileMovementComponent* ProjectileMovementComp;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UNiagaraComponent> NiagaraComp;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UStaticMesh> StaticMeshComp;
+	TObjectPtr<UStaticMeshComponent> StaticMeshComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile | Components")
+	TObjectPtr<USphereComponent> CollisionComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Damage")
+	TSubclassOf<UGameplayEffect> DamageGEClass;
+	
+	UFUNCTION()
+	void HandleImpact(    UPrimitiveComponent* OverlappedComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult);
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class USphereComponent* AttackRange;
+	USphereComponent* AttackRange;
+	
+	void SetTarget(AActor* InTarget) { Target = InTarget; }
+	void SetDamage(float InDamage) { Damage = InDamage; }
+    void ApplyDamageTo(AActor* OtherActor);
+	AActor* Target;
 };

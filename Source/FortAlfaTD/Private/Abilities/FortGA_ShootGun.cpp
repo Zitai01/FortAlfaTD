@@ -27,5 +27,6 @@ void UFortGA_ShootGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 
 void UFortGA_ShootGun::PerformShoot()
 {
-
+	
+	UE_LOG(LogTemp, Warning, TEXT("Shooting at "));
 }

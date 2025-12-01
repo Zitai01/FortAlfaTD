@@ -41,7 +41,12 @@ class FORTALFATD_API UFortHealthAttributeSet : public UAttributeSet
 
 	UPROPERTY(VisibleAnywhere)
 	FGameplayAttributeData Damage;
-	
+	/*
+	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UFortHealthAttributeSet, Health);
+	GAMEPLAYATTRIBUTE_VALUE_GETTER(Health);
+	GAMEPLAYATTRIBUTE_VALUE_SETTER(Health);
+	GAMEPLAYATTRIBUTE_VALUE_INITTER(Health);
+	*/
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet, Damage);
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet,Health);
 	ATTRIBUTE_ACCESSORS(UFortHealthAttributeSet,MaxHealth);
