@@ -31,7 +31,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn = true))
 	FGameplayEffectSpecHandle DamageEffectSpecHandle;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Movement)
 	UProjectileMovementComponent* ProjectileMovementComp;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
@@ -45,6 +45,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Damage")
 	TSubclassOf<UGameplayEffect> DamageGEClass;
+
+	void FireInDirection(const FVector& ShootDirection);
 	
 	UFUNCTION()
 	void HandleImpact(    UPrimitiveComponent* OverlappedComp,
@@ -53,7 +55,7 @@ public:
 	int32 OtherBodyIndex,
 	bool bFromSweep,
 	const FHitResult& SweepResult);
-	
+	virtual void Tick( float DeltaTime ) override;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	USphereComponent* AttackRange;
 	

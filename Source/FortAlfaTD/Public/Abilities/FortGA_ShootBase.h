@@ -25,13 +25,15 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* FireIronsightsMontage;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<AFortProjectileBase> ProjectileClass;
 
-	void PerformShoot(class AFortTowerBase* Tower);
+	virtual void PerformShoot(class AFortTowerBase* Tower);
 	
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	void FireInDirection(const FVector& ShootDirection);
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bUseInstantHit = false;
 };

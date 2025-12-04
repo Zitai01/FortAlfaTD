@@ -16,9 +16,9 @@ AFortTowerBase::AFortTowerBase()
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMesh"));
 	RootComponent = BaseMesh;
 	MountMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MountMesh"));
-	MountMesh->SetupAttachment(BaseMesh);
+	MountMesh->SetupAttachment(BaseMesh,FName(TEXT("Mount_Top")));
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TurretMesh"));
-	TurretMesh->SetupAttachment(MountMesh);
+	TurretMesh->SetupAttachment(MountMesh,FName(TEXT("Mount_Weapon_R")));
 	FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
 	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
 	TowerAttributeSet = CreateDefaultSubobject<UFortTowerAttributeSet>(TEXT("TowerAttributeSet"));
@@ -30,7 +30,6 @@ AFortTowerBase::AFortTowerBase()
 	AttackRangeSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	AttackRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-
 	
 }
 
@@ -51,8 +50,16 @@ void AFortTowerBase::BeginPlay()
 	{
 		TurretMesh->AttachToComponent(
 			MountMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Mount_Weapon_R");
-	} 
+	}
+	if (ShootAbility && FortAbilitySystemComp)
+	{
+		FGameplayAbilitySpec AbilitySpec(ShootAbility, 1, INDEX_NONE, this);
+		FortAbilitySystemComp->GiveAbility(AbilitySpec);
+	}
 
+	FortAbilitySystemComp->InitAbilityActorInfo(this, this);
+
+	
 }
 
 // Called to bind functionality to input
@@ -92,7 +99,7 @@ void AFortTowerBase::OnEnemyEnterRange(
 {
 	if (AFortEnemyBaseCharacter* Enemy = Cast<AFortEnemyBaseCharacter>(OtherActor))
 	{
-		EnemiesInRange.Add(Enemy);
+		EnemiesWithInRange.Add(Enemy);
 	}
 }
 
@@ -104,7 +111,7 @@ void AFortTowerBase::OnEnemyExitRange(
 {
 	if (AFortEnemyBaseCharacter* Enemy = Cast<AFortEnemyBaseCharacter>(OtherActor))
 	{
-		EnemiesInRange.Remove(Enemy);
+		EnemiesWithInRange.Remove(Enemy);
 		if (CurrentTarget == Enemy)
 		{
 			CurrentTarget = nullptr; // force re-select next Tick
@@ -136,13 +143,13 @@ AFortEnemyBaseCharacter* AFortTowerBase::FindNearestEnemy()
 	AFortEnemyBaseCharacter* Nearest = nullptr;
 	float Closest = FLT_MAX;
 
-	for (int32 i = EnemiesInRange.Num() - 1; i >= 0; --i)
+	for (int32 i = EnemiesWithInRange.Num() - 1; i >= 0; --i)
 	{
-		AFortEnemyBaseCharacter* Enemy = EnemiesInRange[i];
+		AFortEnemyBaseCharacter* Enemy = EnemiesWithInRange[i];
 
 		if (!IsEnemyValid(Enemy))
 		{
-			EnemiesInRange.RemoveAt(i);
+			EnemiesWithInRange.RemoveAt(i);
 			continue;
 		}
 
@@ -166,7 +173,7 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 
 	FRotator DesiredRot = Dir.Rotation();
 
-	float Speed = 100;
+	float Speed = 200;
 
 	FRotator NewRot = FMath::RInterpTo(
 		GetActorRotation(),
@@ -187,7 +194,14 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 		return;
 
 	TimeSinceLastShot = 0.f;
-
+	if (auto ASC = CurrentTarget->GetAbilitySystemComponent())
+	{
+		if (ASC && ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("State.Death.Start")))
+		{
+			CurrentTarget = nullptr;
+			return;
+		}
+	}
 	if (FortAbilitySystemComp && ShootAbility)
 	{
 		FortAbilitySystemComp->TryActivateAbilityByClass(ShootAbility);

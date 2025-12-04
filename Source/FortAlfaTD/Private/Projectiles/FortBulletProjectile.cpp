@@ -7,5 +7,5 @@
 
 AFortBulletProjectile::AFortBulletProjectile()
 {
-	 ProjectileMovementComp->InitialSpeed = 1000.f;
+	
 }

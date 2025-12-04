@@ -25,7 +25,7 @@ void UFortGA_ShootBase::ActivateAbility(
 		return;
 	}
 
-	AFortTowerBase* Tower = Cast<AFortTowerBase>(ActorInfo->AvatarActor.Get());
+	AFortTowerBase* Tower = Cast<AFortTowerBase>(GetAvatarActorFromActorInfo());
 	if (!Tower || !Tower->CurrentTarget)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
@@ -53,21 +53,22 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 
 	UFortTowerAttributeSet* Stats = Tower->GetTowerAttributes();
 	float Damage = Stats ? Stats->GetAttackDamage() : 10.f;
-
-	// Muzzle location
+	
 	FVector MuzzleLoc;
 	FRotator MuzzleRot;
-
+	FVector Direction;
 	if (Tower->GetTurretMesh() && Tower->GetTurretMesh()->DoesSocketExist("Barrel_End"))
 	{
 		MuzzleLoc = Tower->GetTurretMesh()->GetSocketLocation("Barrel_End");
 		MuzzleRot = Tower->GetTurretMesh()->GetSocketRotation("Barrel_End");
+		Direction = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
 	}
 	else
 	{
 		// fallback
 		MuzzleLoc = Tower->GetActorLocation();
 		MuzzleRot = (Target->GetActorLocation() - MuzzleLoc).Rotation();
+		Direction = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
 	}
 
 	// If instant hit mode
@@ -87,14 +88,15 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 	}
 
 	// Spawn projectile version
+	ProjectileClass = Tower->GetProjectileClass();
 	if (ProjectileClass)
 	{
 		FActorSpawnParameters Params;
 		Params.Owner = Tower;
-
+		FVector SpawnLocation = FVector(0,0,0);
 		AFortProjectileBase* Projectile = Tower->GetWorld()->SpawnActor<AFortProjectileBase>(
 			ProjectileClass,
-			MuzzleLoc,
+			MuzzleLoc + SpawnLocation ,
 			MuzzleRot,
 			Params
 		);
@@ -103,6 +105,7 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 		{
 			Projectile->SetTarget(Target);
 			Projectile->SetDamage(Damage);
+			Projectile->FireInDirection(Direction);
 		}
 	}
 }

@@ -19,14 +19,14 @@ UFortGA_ShootGun::UFortGA_ShootGun()
 void UFortGA_ShootGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo * ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData * TriggerEventData)
 {
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo)) return;
-
-	PerformShoot();
+	AFortTowerBase* Tower = Cast<AFortTowerBase>(GetAvatarActorFromActorInfo());
+	PerformShoot(Tower);
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
-void UFortGA_ShootGun::PerformShoot()
+ void UFortGA_ShootGun::PerformShoot( AFortTowerBase* Tower)
 {
-	
-	UE_LOG(LogTemp, Warning, TEXT("Shooting at "));
+	Super::PerformShoot(Tower);
+	UE_LOG(LogTemp, Warning, TEXT("Shooting"));
 }

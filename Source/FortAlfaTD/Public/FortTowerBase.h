@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "Abilities/FortGA_ShootBase.h"
+#include "Abilities/FortGA_ShootGun.h"
 #include "GameFramework/Pawn.h"
 #include "FortTowerBase.generated.h"
 
@@ -58,6 +59,8 @@ protected:
 	UPROPERTY()
 	TArray<AFortEnemyBaseCharacter*> EnemiesInRange;
 
+	TArray<TObjectPtr<AFortEnemyBaseCharacter>> EnemiesWithInRange;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
 	UStaticMeshComponent* BaseMesh;
 
@@ -74,13 +77,21 @@ protected:
 	USphereComponent* AttackRangeSphere;
 	
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UFortGA_ShootBase> ShootAbility;
-	
+	TSubclassOf<UFortGA_ShootGun> ShootAbility;
+
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<AFortProjectileBase> ProjectileClass;
+
+
+
 	float TimeSinceLastShot = 0.f;
 	FTimerHandle TowerLogicTimerHandle;
 public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Combat")
+	TSubclassOf< AFortProjectileBase> GetProjectileClass() const { return ProjectileClass; }
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
@@ -89,6 +100,8 @@ public:
 public:
 	FORCEINLINE UStaticMeshComponent* GetTurretMesh() const { return TurretMesh; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FVector MuzzleOffset;
 
 	UFUNCTION()
 	void OnEnemyEnterRange(
