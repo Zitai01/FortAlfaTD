@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "FortEnemyBaseCharacter.generated.h"
 
+class UFortEnemyDataAsset;
+
 UCLASS(abstract)
 class FORTALFATD_API AFortEnemyBaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
@@ -31,6 +33,6 @@ public:
 	AFortEnemyBaseCharacter();
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	void InitEnemyFromData(UFortEnemyDataAsset* DataAsset);
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 };

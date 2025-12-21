@@ -36,6 +36,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Tower")
 	FGameplayAttributeData AttackRange;
 
+	UPROPERTY(BlueprintReadOnly, Category="Tower")
+	FGameplayAttributeData ProjectileSpeed;
+
+	ATTRIBUTE_ACCESSORS(UFortTowerAttributeSet, ProjectileSpeed)
 	ATTRIBUTE_ACCESSORS(UFortTowerAttributeSet, AttackSpeed)
 	ATTRIBUTE_ACCESSORS(UFortTowerAttributeSet, AttackDamage)
 	ATTRIBUTE_ACCESSORS(UFortTowerAttributeSet, AttackRange)

@@ -46,3 +46,26 @@ UAbilitySystemComponent* AFortEnemyBaseCharacter::GetAbilitySystemComponent() co
 {
 	return  FortAbilitySystemComp;
 }
+
+void AFortEnemyBaseCharacter::InitEnemyFromData(UFortEnemyDataAsset* DA)
+{
+	/*
+	if (!DA || !ASC) return;
+
+	// Apply tags
+	ASC->AddLooseGameplayTags(DA->EnemyTags);
+
+	// Apply startup GE (HP, armor, speed…)
+	if (DA->StartupEffect)
+	{
+		FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+		ASC->ApplyGameplayEffectToSelf(DA->StartupEffect.GetDefaultObject(), 1, Context);
+	}
+
+	// Additional manual attribute initialization
+	// If not covered by StartupEffect:
+	Attributes->SetHealth(DA->MaxHealth);
+	Attributes->SetMoveSpeed(DA->MoveSpeed);
+	Attributes->SetArmor(DA->Armor);
+	*/
+}

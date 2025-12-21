@@ -47,7 +47,6 @@ public:
 	TSubclassOf<UGameplayEffect> DamageGEClass;
 
 	void FireInDirection(const FVector& ShootDirection);
-	
 	UFUNCTION()
 	void HandleImpact(    UPrimitiveComponent* OverlappedComp,
 	AActor* OtherActor,
@@ -55,12 +54,12 @@ public:
 	int32 OtherBodyIndex,
 	bool bFromSweep,
 	const FHitResult& SweepResult);
-	virtual void Tick( float DeltaTime ) override;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	USphereComponent* AttackRange;
-	
-	void SetTarget(AActor* InTarget) { Target = InTarget; }
+	void SetTarget(AActor* InTarget);
 	void SetDamage(float InDamage) { Damage = InDamage; }
     void ApplyDamageTo(AActor* OtherActor);
-	AActor* Target;
+	
+	UPROPERTY()
+	AActor* TargetActor;
 };

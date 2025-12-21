@@ -36,4 +36,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bUseInstantHit = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Effects")
+	FGameplayTag FireCueTag;
 };

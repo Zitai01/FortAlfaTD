@@ -10,7 +10,7 @@
 
 UFortGA_ShootBase::UFortGA_ShootBase()
 {
-	
+	FireCueTag = FGameplayTag::RequestGameplayTag(FName("GameplayCue.Tower.MachineGunFire"));
 }
 
 void UFortGA_ShootBase::ActivateAbility(
@@ -61,14 +61,14 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 	{
 		MuzzleLoc = Tower->GetTurretMesh()->GetSocketLocation("Barrel_End");
 		MuzzleRot = Tower->GetTurretMesh()->GetSocketRotation("Barrel_End");
-		Direction = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
+		Direction = (Tower->TargetPredictedLocation  - MuzzleLoc).GetSafeNormal();
 	}
 	else
 	{
 		// fallback
 		MuzzleLoc = Tower->GetActorLocation();
-		MuzzleRot = (Target->GetActorLocation() - MuzzleLoc).Rotation();
-		Direction = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
+		MuzzleRot = (Tower->TargetPredictedLocation - MuzzleLoc).Rotation();
+		Direction = (Tower->TargetPredictedLocation - MuzzleLoc).GetSafeNormal();
 	}
 
 	// If instant hit mode
@@ -93,10 +93,10 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 	{
 		FActorSpawnParameters Params;
 		Params.Owner = Tower;
-		FVector SpawnLocation = FVector(0,0,0);
+		FVector SpawnAlignLocation = FVector(0,0,0);
 		AFortProjectileBase* Projectile = Tower->GetWorld()->SpawnActor<AFortProjectileBase>(
 			ProjectileClass,
-			MuzzleLoc + SpawnLocation ,
+			MuzzleLoc + SpawnAlignLocation ,
 			MuzzleRot,
 			Params
 		);
@@ -106,6 +106,18 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 			Projectile->SetTarget(Target);
 			Projectile->SetDamage(Damage);
 			Projectile->FireInDirection(Direction);
+			Projectile->SetTarget(Tower->CurrentTarget); 
 		}
 	}
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	check(ASC);
+	check(FireCueTag.IsValid());
+
+	FGameplayCueParameters CueParams;
+	CueParams.Location = MuzzleLoc;  
+	CueParams.Instigator = GetAvatarActorFromActorInfo(); 
+
+	ASC->ExecuteGameplayCue(FireCueTag, CueParams);
+
+
 }

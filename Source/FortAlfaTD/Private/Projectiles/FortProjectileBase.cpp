@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------
 AFortProjectileBase::AFortProjectileBase()
 {
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
 
     // --- Collision (Root) ---
     CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
@@ -23,11 +23,13 @@ AFortProjectileBase::AFortProjectileBase()
 
     // --- Projectile Movement ---
     ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
-    ProjectileMovementComp->InitialSpeed = 1000.f;
-    ProjectileMovementComp->MaxSpeed = 1000.f;
+    ProjectileMovementComp->InitialSpeed = 8000.f;
+    ProjectileMovementComp->MaxSpeed = 100000.f;
     ProjectileMovementComp->bRotationFollowsVelocity = true;
     ProjectileMovementComp->ProjectileGravityScale = 0.f;
     ProjectileMovementComp->SetUpdatedComponent(CollisionComponent);
+    ProjectileMovementComp->bIsHomingProjectile = false; // enable when target available
+    ProjectileMovementComp->HomingAccelerationMagnitude = 100.f; // tweak for homing strength
 
     // --- Mesh ---
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
@@ -52,14 +54,6 @@ void AFortProjectileBase::BeginPlay()
     CollisionComponent->OnComponentBeginOverlap.AddDynamic(
         this, &AFortProjectileBase::HandleImpact
     );
-}
-
-// ---------------------------------------------------------------------------
-// Tick
-// ---------------------------------------------------------------------------
-void AFortProjectileBase::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
 }
 
 // ---------------------------------------------------------------------------
@@ -132,3 +126,15 @@ void AFortProjectileBase::ApplyDamageTo(AActor* OtherActor)
         Damage,
         *OtherActor->GetName());
 }
+
+void AFortProjectileBase::SetTarget(AActor* InTarget)
+{
+    TargetActor = InTarget;
+
+    if (ProjectileMovementComp && TargetActor)
+    {
+        ProjectileMovementComp->bIsHomingProjectile = true;
+        ProjectileMovementComp->HomingTargetComponent = TargetActor->GetRootComponent();
+    }
+}
+

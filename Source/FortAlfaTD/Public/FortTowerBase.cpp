@@ -8,6 +8,7 @@
 #include "FortHealthAttributeSet.h"
 #include "FortTowerAttributeSet.h"
 #include "Components/SphereComponent.h"
+#include "Data/FortAbilityAsset.h"
 // Sets default values
 AFortTowerBase::AFortTowerBase()
 {
@@ -28,8 +29,13 @@ AFortTowerBase::AFortTowerBase()
 	float range = TowerAttributeSet->GetAttackRange();
 	AttackRangeSphere->InitSphereRadius(range);
 	AttackRangeSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	AttackRangeSphere->SetCollisionObjectType(ECC_WorldDynamic);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-	AttackRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	//AttackRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // enemies
+	AttackRangeSphere->SetGenerateOverlapEvents(true);
+	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+	//AttackRangeSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//AttackRangeSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	
 }
 
@@ -51,15 +57,32 @@ void AFortTowerBase::BeginPlay()
 		TurretMesh->AttachToComponent(
 			MountMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Mount_Weapon_R");
 	}
+	/*
 	if (ShootAbility && FortAbilitySystemComp)
 	{
 		FGameplayAbilitySpec AbilitySpec(ShootAbility, 1, INDEX_NONE, this);
 		FortAbilitySystemComp->GiveAbility(AbilitySpec);
 	}
-
+	*/
 	FortAbilitySystemComp->InitAbilityActorInfo(this, this);
-
+	for (TSubclassOf<UGameplayAbility> ability : AbilitySet->Abilities )
+	{
+		if (FortAbilitySystemComp)
+		{
+			FGameplayAbilitySpec AbilitySpec(ability, 1, INDEX_NONE, this);
+			FortAbilitySystemComp->GiveAbility(AbilitySpec);
+		}
+	}
 	
+	for (TSubclassOf<UGameplayEffect> effect : AbilitySet->Effects )
+	{
+		if (FortAbilitySystemComp)
+		{
+			UGameplayEffect* effectInstance = NewObject<UGameplayEffect>(this, effect.Get());
+			FGameplayEffectContextHandle Context = FortAbilitySystemComp->MakeEffectContext();
+			FortAbilitySystemComp->ApplyGameplayEffectToSelf(effectInstance,1,Context);
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -79,7 +102,7 @@ void AFortTowerBase::TowerUpdate()
 		if (!IsEnemyValid(CurrentTarget))
 			return;
 	}
-	
+	PredictTargetLocation(GetTowerAttributes()->GetProjectileSpeed());
 	RotateToFaceEnemy(DeltaTime);
 	TryShoot(DeltaTime);
 }
@@ -117,6 +140,37 @@ void AFortTowerBase::OnEnemyExitRange(
 			CurrentTarget = nullptr; // force re-select next Tick
 		}
 	}
+}
+
+void AFortTowerBase::PredictTargetLocation( float ProjectileSpeed) 
+{
+	if (!CurrentTarget || ProjectileSpeed <= 0.f)
+		TargetPredictedLocation =  FVector::ZeroVector;
+	FVector P0 = TurretMesh->GetSocketLocation("Barrel_End");
+	FVector P1 = CurrentTarget->GetActorLocation();
+	FVector V  = CurrentTarget->GetVelocity();
+
+	FVector D = P1 - P0;
+
+	float A = V.SizeSquared() - FMath::Square(ProjectileSpeed);
+	float B = 2.f * FVector::DotProduct(V, D);
+	float C = D.SizeSquared();
+
+	float Disc = B * B - 4.f * A * C;
+	if (Disc < 0.f)
+		TargetPredictedLocation = P1;
+
+	float SqrtDisc = FMath::Sqrt(Disc);
+	float T1 = (-B + SqrtDisc) / (2.f * A);
+	float T2 = (-B - SqrtDisc) / (2.f * A);
+
+	float T = FMath::Min(T1, T2);
+	if (T < 0.f)
+		T = FMath::Max(T1, T2);
+	if (T < 0.f)
+		TargetPredictedLocation = P1;
+
+	TargetPredictedLocation =  P1 + V * T;
 }
 
 bool AFortTowerBase::IsEnemyValid(APawn* Enemy)
@@ -168,8 +222,8 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 {
 	if (!CurrentTarget) return;
 
-	FVector Dir = CurrentTarget->GetActorLocation() - GetActorLocation();
-	Dir.Z = 0; // Only yaw rotation
+	FVector Dir = TargetPredictedLocation - GetActorLocation();
+	//Dir.Z = 0;
 
 	FRotator DesiredRot = Dir.Rotation();
 
@@ -202,8 +256,12 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 			return;
 		}
 	}
-	if (FortAbilitySystemComp && ShootAbility)
+
+	
+	if (FortAbilitySystemComp)
 	{
-		FortAbilitySystemComp->TryActivateAbilityByClass(ShootAbility);
+		AbilityTag = FGameplayTag::RequestGameplayTag(FName("Abilities.Skill.ShootBullet"));
+
+		FortAbilitySystemComp->TryActivateAbilitiesByTag(AbilityTag.GetSingleTagContainer());
 	}
 }

@@ -9,11 +9,11 @@
 #include "GameFramework/Pawn.h"
 #include "FortTowerBase.generated.h"
 
+class UFortAbilityAsset;
 class AFortEnemyBaseCharacter;
 class USphereComponent;
 class UAbilitySystemComponent;
 class UGameplayAbility;
-
 
 UCLASS()
 class FORTALFATD_API AFortTowerBase : public APawn,  public IAbilitySystemInterface
@@ -40,6 +40,8 @@ protected:
 	void TryShoot(float DeltaTime);
 	
 	void TowerUpdate();
+	
+	void PredictTargetLocation(float ProjectileSpeed) ;
 	
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
 	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
@@ -82,7 +84,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<AFortProjectileBase> ProjectileClass;
 
-
+	UPROPERTY(EditDefaultsOnly)
+	UFortAbilityAsset* AbilitySet; 
 
 	float TimeSinceLastShot = 0.f;
 	FTimerHandle TowerLogicTimerHandle;
@@ -96,13 +99,14 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 	FORCEINLINE UFortTowerAttributeSet* GetTowerAttributes() const { return TowerAttributeSet; }
-
-public:
+	
 	FORCEINLINE UStaticMeshComponent* GetTurretMesh() const { return TurretMesh; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;
 
+	FGameplayTag AbilityTag;
+	
 	UFUNCTION()
 	void OnEnemyEnterRange(
 		UPrimitiveComponent* OverlappedComp,
@@ -121,4 +125,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
 	AFortEnemyBaseCharacter* CurrentTarget = nullptr;
+
+	FVector TargetPredictedLocation;
 };

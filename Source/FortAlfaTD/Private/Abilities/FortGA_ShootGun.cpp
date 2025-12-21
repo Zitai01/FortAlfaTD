@@ -3,6 +3,7 @@
 
 #include "Abilities/FortGA_ShootGun.h"
 
+#include "AbilitySystemComponent.h"
 #include "FortTowerBase.h"
 
 UFortGA_ShootGun::UFortGA_ShootGun()
@@ -28,5 +29,4 @@ void UFortGA_ShootGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
  void UFortGA_ShootGun::PerformShoot( AFortTowerBase* Tower)
 {
 	Super::PerformShoot(Tower);
-	UE_LOG(LogTemp, Warning, TEXT("Shooting"));
 }

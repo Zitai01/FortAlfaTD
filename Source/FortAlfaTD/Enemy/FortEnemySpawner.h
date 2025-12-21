@@ -18,24 +18,32 @@ class FORTALFATD_API AFortEnemySpawner : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AFortEnemySpawner();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
 	// Called every frame
-	 UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Waves")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Waves")
     TArray<UFortWaveData*> Waves;
-
+	
     // Found automatically at BeginPlay
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Spawn")
     TArray<AFortEnemySpawnPoint*> SpawnPoints;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Waves")
+	TArray<class UFortMissionWaveSet*> MissionWaveSets;
+
+	// What to spawn test only, delete later
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Spawning")
+	TSubclassOf<AFortEnemyBaseCharacter> EnemyClass;
+	
     // Optional difficulty scalar (you can use this in SetupWaveState)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Difficulty")
     float DifficultyMultiplier = 1.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Spawning")
+	int32 SpawnedCount = 0;
     // ---- Events ----
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveStarted, int32, WaveIndex);
@@ -100,5 +108,5 @@ private:
 
     AFortEnemySpawnPoint* GetSpawnPointForLane(int32 LaneIndex) const;
     void CheckIfWaveCleared();
-
+    void SetupWavesForMission(int32 Mission, int32 Difficulty);
 };
