@@ -7,6 +7,7 @@
 #include "Data/FortWaveData.h"
 #include "FortEnemySpawner.generated.h"
 
+struct FStreamableHandle;
 class AFortEnemySpawnPoint;
 class AFortEnemyBaseCharacter;
 
@@ -106,6 +107,10 @@ private:
     void SpawnNextGroup();
     void SpawnEnemy();
 
+	TSharedPtr<FStreamableHandle> WavesLoadHandle;
+
+	void LoadWavesFromGameInstance();
+	void OnWavesLoaded();
     AFortEnemySpawnPoint* GetSpawnPointForLane(int32 LaneIndex) const;
     void CheckIfWaveCleared();
     void SetupWavesForMission(int32 Mission, int32 Difficulty);

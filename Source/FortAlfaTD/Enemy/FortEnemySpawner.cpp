@@ -7,6 +7,8 @@
 #include "FortEnemyBaseCharacter.h"
 #include "FortEnemySpawnPoint.h"
 #include "FortMissionWaveSet.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -31,15 +33,84 @@ void AFortEnemySpawner::BeginPlay()
 	}
 	int32 Mission = GI->CurrentLevel;
 	int32 Difficulty = 1;
-	SetupWavesForMission(Mission, Difficulty);
-	GetWorld()->GetTimerManager().SetTimer(
-	SpawnTimerHandle,
-	this,
-	&AFortEnemySpawner::SpawnEnemy,
-	20,
-	true,
-	1
-);
+	LoadWavesFromGameInstance();
+	//SetupWavesForMission(Mission, Difficulty);
+}
+
+void AFortEnemySpawner::LoadWavesFromGameInstance()
+{
+	UFortDefaultGameInstance* GI = GetWorld() ? Cast<UFortDefaultGameInstance>(GetWorld()->GetGameInstance()) : nullptr;
+	if (!GI)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[EnemySpawner] GameInstance missing or wrong class"));
+		return;
+	}
+
+	if (GI->SelectedWaves.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[EnemySpawner] GI.SelectedWaves is empty (Mission=%d)"),
+			GI->CurrentLevel);
+		return;
+	}
+	
+	TArray<FSoftObjectPath> PathsToLoad;
+	PathsToLoad.Reserve(GI->SelectedWaves.Num());
+
+	for (const TSoftObjectPtr<UFortWaveData>& WaveSoft : GI->SelectedWaves)
+	{
+		if (WaveSoft.IsNull())
+		{
+			continue;
+		}
+		PathsToLoad.Add(WaveSoft.ToSoftObjectPath());
+	}
+
+	if (PathsToLoad.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[EnemySpawner] All SelectedWaves entries were null"));
+		return;
+	}
+
+	// Async load
+	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+	WavesLoadHandle = Streamable.RequestAsyncLoad(
+		PathsToLoad,
+		FStreamableDelegate::CreateUObject(this, &AFortEnemySpawner::OnWavesLoaded)
+	);
+
+	UE_LOG(LogTemp, Log, TEXT("[EnemySpawner] Async loading %d wave assets..."), PathsToLoad.Num());
+}
+
+void AFortEnemySpawner::OnWavesLoaded()
+{
+	UFortDefaultGameInstance* GI = GetWorld() ? Cast<UFortDefaultGameInstance>(GetWorld()->GetGameInstance()) : nullptr;
+	if (!GI)
+	{
+		return;
+	}
+
+	// Convert soft refs -> hard pointers for runtime spawning
+	Waves.Empty();
+	Waves.Reserve(GI->SelectedWaves.Num());
+
+	for (const TSoftObjectPtr<UFortWaveData>& WaveSoft : GI->SelectedWaves)
+	{
+		if (UFortWaveData* Wave = WaveSoft.Get()) // now loaded
+		{
+			Waves.Add(Wave);
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[EnemySpawner] Loaded %d/%d wave assets"), Waves.Num(), GI->SelectedWaves.Num());
+
+	if (Waves.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[EnemySpawner] No valid waves after load"));
+		return;
+	}
+
+	// Start wave 0
+	StartWave(0);
 }
 
 void AFortEnemySpawner::SetupWavesForMission(int32 Mission, int32 Difficulty)
@@ -94,56 +165,162 @@ void AFortEnemySpawner::FindSpawnPointsInLevel()
 
 void AFortEnemySpawner::SpawnEnemy()
 {
-	// Stop if we reached max
-	if (SpawnedCount >= 10)
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		if (UWorld* World = GetWorld())
-		{
-			World->GetTimerManager().ClearTimer(SpawnTimerHandle);
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("[EnemySpawner] Reached MaxSpawnCount=%d, stopped."), 10);
 		return;
 	}
 
-	UWorld* World = GetWorld();
-	if (!World) return;
+	// Completed this group?
+	if (SpawnedInCurrentGroup >= CurrentGroup.Count)
+	{
+		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
+		CurrentGroupIndex++;
+		SpawnNextGroup();
+		return;
+	}
 
-	const FVector SpawnLoc =  SpawnPoints[0]->GetActorLocation();
-	const FRotator SpawnRot =  SpawnPoints[0]->GetActorRotation();
+	AFortEnemySpawnPoint* SP = GetSpawnPointForLane(CurrentGroup.LaneIndex);
+	if (!SP)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EnemySpawner] No spawn point found for lane %d"), CurrentGroup.LaneIndex);
+		// You can choose to skip or fallback. Your GetSpawnPointForLane already falls back to SpawnPoints[0]. :contentReference[oaicite:9]{index=9}
+		SP = (SpawnPoints.Num() > 0) ? SpawnPoints[0] : nullptr;
+		if (!SP) return;
+	}
+
+	const FVector SpawnLoc = SP->GetActorLocation();
+	const FRotator SpawnRot = SP->GetActorRotation();
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	 for (int32 i = 0; i < 10; i++)
-	 {
-	 	AActor* Spawned = World->SpawnActor<AFortEnemyBaseCharacter>(EnemyClass, SpawnLoc, SpawnRot, Params);
-	 	if (Spawned)
-	 	{
-	 		SpawnedCount++;
-	 		UE_LOG(LogTemp, Verbose, TEXT("[EnemySpawner] Spawned %s (%d)"), *GetNameSafe(Spawned), SpawnedCount);
-	 	}
-	 }
+
+	AFortEnemyBaseCharacter* Spawned = World->SpawnActor<AFortEnemyBaseCharacter>(
+		Cast<UClass>(CurrentGroup.EnemyClass.Get()),
+		SpawnLoc,
+		SpawnRot,
+		Params
+	);
+
+	if (Spawned)
+	{
+		EnemiesAlive++;
+		SpawnedInCurrentGroup++;
+
+		// Optional: let enemy call RegisterEnemyDeath(this) on death.
+		// If you have an OnDied delegate, bind it here.
+
+		UE_LOG(LogTemp, Verbose, TEXT("[EnemySpawner] Spawned %s. Alive=%d"), *GetNameSafe(Spawned), EnemiesAlive);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EnemySpawner] SpawnActor failed (lane %d)"), CurrentGroup.LaneIndex);
+	}
 
 }
 
 void AFortEnemySpawner::StartWave(int32 WaveIndex)
 {
+	if (WaveIndex < 0 || WaveIndex >= Waves.Num() || !Waves[WaveIndex])
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EnemySpawner] Invalid wave index %d"), WaveIndex);
+		return;
+	}
 
+	// Stop anything currently spawning
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
+	}
+
+	CurrentWaveIndex = WaveIndex;
+	CurrentGroupIndex = 0;
+
+	EnemiesKilled = 0;
+	EnemiesAlive = 0;
+	TotalEnemiesThisWave = 0;
+
+	// Pre-calc total enemies for UI
+	for (const FFortEnemySpawnInfo& G : Waves[WaveIndex]->SpawnGroups)
+	{
+		TotalEnemiesThisWave += FMath::Max(0, G.Count);
+	}
+
+	bIsSpawningWave = true;
+	OnWaveStarted.Broadcast(CurrentWaveIndex);
+
+	UE_LOG(LogTemp, Log, TEXT("[EnemySpawner] StartWave %d (Total=%d)"), CurrentWaveIndex, TotalEnemiesThisWave);
+
+	SpawnNextGroup();
 }
 
 void AFortEnemySpawner::StartNextWave()
 {
-
+	const int32 Next = (CurrentWaveIndex == INDEX_NONE) ? 0 : (CurrentWaveIndex + 1);
+	if (Next < Waves.Num())
+	{
+		StartWave(Next);
+	}
 }
 
 void AFortEnemySpawner::SetupWaveState()
 {
+	SpawnedInCurrentGroup = 0;
+	if (!Waves.IsValidIndex(CurrentWaveIndex) || !Waves[CurrentWaveIndex]) return;
 
+	const UFortWaveData* Wave = Waves[CurrentWaveIndex];
+	if (!Wave->SpawnGroups.IsValidIndex(CurrentGroupIndex)) return;
+
+	CurrentGroup = Wave->SpawnGroups[CurrentGroupIndex];
 }
 
 void AFortEnemySpawner::SpawnNextGroup()
 {
+	if (!Waves.IsValidIndex(CurrentWaveIndex) || !Waves[CurrentWaveIndex])
+	{
+		bIsSpawningWave = false;
+		CheckIfWaveCleared();
+		return;
+	}
 
+	const UFortWaveData* Wave = Waves[CurrentWaveIndex];
+
+	// Done with all groups -> stop spawning; now we just wait for EnemiesAlive to hit 0
+	if (CurrentGroupIndex >= Wave->SpawnGroups.Num())
+	{
+		bIsSpawningWave = false;
+		UE_LOG(LogTemp, Log, TEXT("[EnemySpawner] Finished spawning wave %d. Waiting for kills..."), CurrentWaveIndex);
+		CheckIfWaveCleared();
+		return;
+	}
+
+	SetupWaveState();
+
+	// Validate group
+	if (!CurrentGroup.EnemyClass || CurrentGroup.Count <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EnemySpawner] Wave %d group %d invalid, skipping"), CurrentWaveIndex, CurrentGroupIndex);
+		CurrentGroupIndex++;
+		SpawnNextGroup();
+		return;
+	}
+
+	// Kick off repeated spawns for this group
+	if (UWorld* World = GetWorld())
+	{
+		const float Interval = FMath::Max(0.01f, CurrentGroup.SpawnInterval);
+		World->GetTimerManager().SetTimer(
+			SpawnTimerHandle,
+			this,
+			&AFortEnemySpawner::SpawnEnemy,
+			Interval,
+			true,
+			0.0f
+		);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[EnemySpawner] Wave %d Group %d: Count=%d Interval=%.2f Lane=%d"),
+		CurrentWaveIndex, CurrentGroupIndex, CurrentGroup.Count, CurrentGroup.SpawnInterval, CurrentGroup.LaneIndex);
 }
 
 AFortEnemySpawnPoint* AFortEnemySpawner::GetSpawnPointForLane(int32 LaneIndex) const

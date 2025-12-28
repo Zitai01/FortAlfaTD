@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "FortDefaultGameInstance.generated.h"
 
+class UFortWaveData;
 /**
  * 
  */
@@ -44,4 +45,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void OnSessionComplete(bool bSuccess);
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Mission")
+	TArray<TSoftObjectPtr<UFortWaveData>> SelectedWaves;
 };
