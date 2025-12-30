@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FortDebugHelper.h"
 #include "UI/FortUISubsystem.h"
+#include "FortDebugHelper.h"
 #include "Engine/AssetManager.h"
 #include "Widgets/FortWidget_ActivatableBase.h"
 #include "Widgets/FortWidget_PrimaryLayout.h"
@@ -40,7 +40,7 @@ void UFortUISubsystem::RegisterCreatedPrimaryLayoutWidget(UFortWidget_PrimaryLay
 void UFortUISubsystem::PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetStackTag,
 	TSoftClassPtr<UFortWidget_ActivatableBase> InSoftWidgetClass, TFunction<void(EAsyncPushWidgetState,UFortWidget_ActivatableBase*)> AysncPushStateCallback)
 {
-	check(InSoftWidgetClass.IsNull());
+	check(!InSoftWidgetClass.IsNull());
 
 	UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(
 		InSoftWidgetClass.ToSoftObjectPath(),
