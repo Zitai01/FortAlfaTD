@@ -7,6 +7,7 @@
 #include "Widgets/FortWidget_ActivatableBase.h"
 #include "FortUISubsystem.generated.h"
 
+class UFortCommonButtonBase;
 class UFortWidget_PrimaryLayout;
 class UFortWidget_ActivatableBase;
 struct FGameplayTag;
@@ -16,9 +17,9 @@ enum class EAsyncPushWidgetState : uint8
 	OnCreatedBeforePush,
 	AfterPush
 	};
-/**
- * 
- */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnButtonDescriptionTextUpdatedDelegate,UFortCommonButtonBase*,BroadCastingButton,FText,DescriptionText);
+
 UCLASS()
 class FORTALFATD_API UFortUISubsystem : public UGameInstanceSubsystem
 {
@@ -34,6 +35,9 @@ public:
 
     void PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetStackTag,TSoftClassPtr<UFortWidget_ActivatableBase> InSoftWidgetClass, TFunction<void(EAsyncPushWidgetState,UFortWidget_ActivatableBase*)> AysncPushStateCallback);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnButtonDescriptionTextUpdatedDelegate OnButtonDescriptionTextUpdated;
+	
 private:
 	UPROPERTY(Transient)
 	UFortWidget_PrimaryLayout* CreatedPrimaryLayout;

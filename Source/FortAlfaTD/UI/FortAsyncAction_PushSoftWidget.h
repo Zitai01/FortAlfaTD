@@ -18,6 +18,7 @@ class FORTALFATD_API UFortAsyncAction_PushSoftWidget : public UBlueprintAsyncAct
 	GENERATED_BODY()
 
 public:
+	
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject", HidePin = "WorldContextObject",BlueprintInternalUseOnly = "true",DisplayName = "Push Soft Widget To Widget Stack"))
 	static UFortAsyncAction_PushSoftWidget* PushSoftWidget(const UObject* WorldContextObject,
 		APlayerController* OwningPlayerController,
