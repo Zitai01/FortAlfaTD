@@ -7,6 +7,8 @@
 #include "Widgets/FortWidget_ActivatableBase.h"
 #include "FortUISubsystem.generated.h"
 
+enum class EConfirmScreenButtonType : uint8;
+enum class EConfirmScreenType : uint8;
 class UFortCommonButtonBase;
 class UFortWidget_PrimaryLayout;
 class UFortWidget_ActivatableBase;
@@ -34,7 +36,8 @@ public:
 	void RegisterCreatedPrimaryLayoutWidget(UFortWidget_PrimaryLayout* InCreatedWidget);
 
     void PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetStackTag,TSoftClassPtr<UFortWidget_ActivatableBase> InSoftWidgetClass, TFunction<void(EAsyncPushWidgetState,UFortWidget_ActivatableBase*)> AysncPushStateCallback);
-
+	void PushConfirmScreenToModalStackAynsc(EConfirmScreenType InScreenType, const FText& InScreenTitle,const FText& InScreenMsg, TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback);
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnButtonDescriptionTextUpdatedDelegate OnButtonDescriptionTextUpdated;
 	

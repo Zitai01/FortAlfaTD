@@ -2,8 +2,13 @@
 
 #include "UI/FortUISubsystem.h"
 #include "FortDebugHelper.h"
+#include "FortFunctionLibrary.h"
+#include "FortUIGameplayTags.h"
+#include "NavigationSystemTypes.h"
+#include "Data/Types/FortEnumTypes.h"
 #include "Engine/AssetManager.h"
 #include "Widgets/FortWidget_ActivatableBase.h"
+#include "Widgets/FortWidget_ConfirmScreen.h"
 #include "Widgets/FortWidget_PrimaryLayout.h"
 
 UFortUISubsystem* UFortUISubsystem::Get(const UObject* WorldContextObject)
@@ -48,7 +53,9 @@ void UFortUISubsystem::PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetSt
 			[InSoftWidgetClass,this,InWidgetStackTag,AysncPushStateCallback]()
 			{
 				UClass* LoadedWidgetClass = InSoftWidgetClass.Get();
+				
 				check(LoadedWidgetClass);
+				
 				UCommonActivatableWidgetContainerBase* FoundWidgetStack = CreatedPrimaryLayout->FindWidgetStackByTag(InWidgetStackTag);
 
 				UFortWidget_ActivatableBase* CreatedWidget =  FoundWidgetStack->AddWidget<UFortWidget_ActivatableBase>(
@@ -63,4 +70,40 @@ void UFortUISubsystem::PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetSt
 				
 			}
 			));
+}
+
+void UFortUISubsystem::PushConfirmScreenToModalStackAynsc(EConfirmScreenType InScreenType, const FText& InScreenTitle,
+	const FText& InScreenMsg, TFunction<void(EConfirmScreenButtonType)> ButtonClickedCallback)
+{
+	UConfirmScreenInfoObject* CreatedInfoObject = nullptr;
+	switch (InScreenType)
+	{
+	case EConfirmScreenType::Ok:
+		CreatedInfoObject = UConfirmScreenInfoObject::CreateOKScreen(InScreenTitle,InScreenMsg);
+		break;
+	case EConfirmScreenType::YesNo:
+		CreatedInfoObject = UConfirmScreenInfoObject::CreateYesNoScreen(InScreenTitle,InScreenMsg);
+		break;
+	case EConfirmScreenType::OkCancel:
+		CreatedInfoObject = UConfirmScreenInfoObject::CreateOKCancelScreen(InScreenTitle,InScreenMsg);
+		break;
+	case EConfirmScreenType::Unknown:
+		break;
+	default:
+		break;
+	}
+	check(CreatedInfoObject);
+
+	PushSoftWidgetToStackAsync(
+		FortUIGameplayTags::FortUI_WidgetStack_Modal,
+		UFortFunctionLibrary::GetFortSoftWidgetClassByTag(FortUIGameplayTags::FortUI_Widget_ConfirmScreen),
+		[CreatedInfoObject,ButtonClickedCallback](EAsyncPushWidgetState InPushState, UFortWidget_ActivatableBase* PushedWidget)
+		{
+			if (InPushState == EAsyncPushWidgetState::OnCreatedBeforePush)
+			{
+				UFortWidget_ConfirmScreen* CreatedConfirmScreen =  CastChecked<UFortWidget_ConfirmScreen>(PushedWidget);
+				CreatedConfirmScreen->InitConfirmScreen(CreatedInfoObject,ButtonClickedCallback);
+			}
+		}
+		);
 }	

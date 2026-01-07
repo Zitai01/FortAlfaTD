@@ -34,7 +34,7 @@ public:
 
 	virtual void Activate() override;
 	
-	private:
+private:
 	TWeakObjectPtr<UWorld> CachedOwningWorld;
 	TWeakObjectPtr<APlayerController> CachedPlayerController;
 	TSoftClassPtr<UFortWidget_ActivatableBase> CachedSoftWidgetClass;

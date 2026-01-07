@@ -8,6 +8,7 @@
 #include "Widgets/CommonActivatableWidgetContainer.h"
 #include "FortWidget_PrimaryLayout.generated.h"
 
+struct FortDebugData;
 /**
  * 
  */
@@ -23,6 +24,21 @@ class FORTALFATD_API UFortWidget_PrimaryLayout : public UCommonUserWidget
 public:
 	UCommonActivatableWidgetContainerBase* FindWidgetStackByTag(const FGameplayTag& InTag) const;
 	
+	UFUNCTION(BlueprintPure, Category="UI|Stacks")
+	TArray<FortDebugData> GetRegisteredWidgetStacksDebug() const;
+
+	UFUNCTION(BlueprintPure, Category="UI|Stacks")
+	UCommonActivatableWidgetContainerBase* GetRegisteredWidgetStack(FGameplayTag StackTag) const;
+
+	UFUNCTION(BlueprintPure, Category="UI|Stacks")
+	TArray<FGameplayTag> GetRegisteredWidgetStackTags() const;
+
+	UFUNCTION(BlueprintPure, Category="UI|Stacks")
+	UCommonActivatableWidget* GetActiveWidgetInStack(FGameplayTag StackTag) const;
+
+	UFUNCTION(BlueprintPure, Category="UI|Stacks")
+	TArray<UCommonActivatableWidget*> GetAllWidgetsInStack(FGameplayTag StackTag) const;
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	void RegisterWidgetStack(UPARAM(meta = (Categories = "FortUI.WidgetStack" )) FGameplayTag InStackTag, UCommonActivatableWidgetContainerBase* Instack);

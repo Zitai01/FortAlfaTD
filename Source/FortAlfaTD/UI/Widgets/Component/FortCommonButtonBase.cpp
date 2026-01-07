@@ -9,7 +9,7 @@ void UFortCommonButtonBase::SetButtonText(FText InText)
 {
 	if (CommonTextBlock_ButtonText && !InText.IsEmpty())
 	{
-		CommonTextBlock_ButtonText->SetText(bUseUpperCaseForButtonText? InText.ToUpper() : InText.ToLower());
+		CommonTextBlock_ButtonText->SetText(bUseUpperCaseForButtonText? InText.ToUpper() : InText);
 	}
 }
 

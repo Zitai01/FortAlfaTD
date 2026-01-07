@@ -38,7 +38,6 @@ void UFortAsyncAction_PushSoftWidget::Activate()
 			switch (InPushState)
 			{
 			case EAsyncPushWidgetState::OnCreatedBeforePush:
-
 				PushedWidget->SetOwningPlayer(CachedPlayerController.Get());
 
 				OnWidgetCreatedBeforePush.Broadcast(PushedWidget);

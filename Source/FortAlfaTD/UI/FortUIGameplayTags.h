@@ -15,6 +15,7 @@ namespace FortUIGameplayTags
 	//Fort Widget
 	FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(FortUI_Widget_PressAnyKeyScreen);
 	FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(FortUI_Widget_MainMenuScreen);
+	FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(FortUI_Widget_ConfirmScreen);
 
 	
 }
