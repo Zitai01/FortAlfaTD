@@ -83,8 +83,8 @@ void AFortAlfaTDCharacter::Move(const FVector2D& Input)
 		*Input.ToString(),
 		*GetNameSafe(Controller),
 		(int32)GetCharacterMovement()->MovementMode);
-	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::X), Input.X);
-	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y), Input.Y);
+	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::X), Input.Y);
+	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y), Input.X);
 }
 
 void AFortAlfaTDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
