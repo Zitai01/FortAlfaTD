@@ -37,7 +37,7 @@ AFortAlfaTDCharacter::AFortAlfaTDCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
 	CameraBoom->TargetArmLength = 800.f;
-	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
+	CameraBoom->SetRelativeRotation(FRotator(-60.f, 90.f, 0.f));
 	CameraBoom->bDoCollisionTest = false;
 
 	// Create the camera component
@@ -74,6 +74,17 @@ void AFortAlfaTDCharacter::Tick(float DeltaSeconds)
 UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
 {
 	return  FortAbilitySystemComp;
+}
+
+void AFortAlfaTDCharacter::Move(const FVector2D& Input)
+{
+	const FRotator YawRot(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	UE_LOG(LogTemp, Warning, TEXT("Character Move: %s  Controller=%s  Mode=%d"),
+		*Input.ToString(),
+		*GetNameSafe(Controller),
+		(int32)GetCharacterMovement()->MovementMode);
+	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::X), Input.X);
+	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y), Input.Y);
 }
 
 void AFortAlfaTDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

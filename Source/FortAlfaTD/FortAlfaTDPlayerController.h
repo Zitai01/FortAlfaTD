@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "FortAlfaTDPlayerController.generated.h"
 
+struct FInputActionValue;
 class UNiagaraSystem;
 class UInputMappingContext;
 class UInputAction;
@@ -62,7 +63,8 @@ public:
 	AFortAlfaTDPlayerController();
 
 protected:
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	TObjectPtr<const UInputAction> IAMove;
 	/** Initialize input bindings */
 	virtual void SetupInputComponent() override;
 	
@@ -72,6 +74,7 @@ protected:
 	void OnSetDestinationReleased();
 	void OnTouchTriggered();
 	void OnTouchReleased();
+	void HandleMove(const FInputActionValue& Value);
 
 };
 

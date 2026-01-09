@@ -42,17 +42,22 @@ void AFortAlfaTDPlayerController::SetupInputComponent()
 		// Set up action bindings
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 		{
+			EnhancedInputComponent->BindAction(IAMove, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleMove);
+			
 			// Setup mouse input events
+			/*
 			EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AFortAlfaTDPlayerController::OnInputStarted);
 			EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::OnSetDestinationTriggered);
 			EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &AFortAlfaTDPlayerController::OnSetDestinationReleased);
 			EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &AFortAlfaTDPlayerController::OnSetDestinationReleased);
+			*/
 
-			// Setup touch input events
+			/*
 			EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Started, this, &AFortAlfaTDPlayerController::OnInputStarted);
 			EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::OnTouchTriggered);
 			EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AFortAlfaTDPlayerController::OnTouchReleased);
 			EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &AFortAlfaTDPlayerController::OnTouchReleased);
+			*/
 		}
 		else
 		{
@@ -122,4 +127,17 @@ void AFortAlfaTDPlayerController::OnTouchReleased()
 {
 	bIsTouch = false;
 	OnSetDestinationReleased();
+}
+
+void AFortAlfaTDPlayerController::HandleMove(const FInputActionValue& Value)
+{
+	const FVector2D V = Value.Get<FVector2D>();
+	UE_LOG(LogTemp, Warning, TEXT("HandleMove: %s  Pawn=%s  IsLocal=%d"),
+	*V.ToString(),
+	*GetNameSafe(GetPawn()),
+	IsLocalController());
+	if (auto* MyChar = Cast<AFortAlfaTDCharacter>(GetPawn()))
+	{
+		MyChar->Move(Value.Get<FVector2D>());
+	}
 }

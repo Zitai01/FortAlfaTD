@@ -3,6 +3,7 @@
 
 #include "UI/FortAsyncAction_PushSoftWidget.h"
 #include "FortUISubsystem.h"
+#include "GameFramework/GameSession.h"
 #include "UI/Widgets/FortWidget_ActivatableBase.h"
 UFortAsyncAction_PushSoftWidget* UFortAsyncAction_PushSoftWidget::PushSoftWidget(const UObject* WorldContextObject,
                                                                                  APlayerController* OwningPlayerController, TSoftClassPtr<UFortWidget_ActivatableBase> InSoftWidgetClass,
@@ -19,6 +20,8 @@ UFortAsyncAction_PushSoftWidget* UFortAsyncAction_PushSoftWidget::PushSoftWidget
 			Node->CachedPlayerController = OwningPlayerController;
 			Node->CachedSoftWidgetClass = InSoftWidgetClass;
 			Node->CachedWidgetStackTag = InWidgetStackTag;
+			Node->bCachedFocusOnNewlyPushedWidget = bFocusOnNewlyPushedWidget;
+			
 			Node->RegisterWithGameInstance(World);
 
 			return Node;
@@ -47,7 +50,10 @@ void UFortAsyncAction_PushSoftWidget::Activate()
 			case EAsyncPushWidgetState::AfterPush:
 
 				AfterPush.Broadcast(PushedWidget);
-
+				UE_LOG(LogTemp, Warning, TEXT("FocusCache=%d  this=%s  PushedWidget=%s"),
+					bCachedFocusOnNewlyPushedWidget,
+					*GetNameSafe(this),
+					*GetNameSafe(PushedWidget));
 				if (bCachedFocusOnNewlyPushedWidget)
 				{
 					if (UWidget* WidgetToFocus = PushedWidget->GetDesiredFocusTarget())

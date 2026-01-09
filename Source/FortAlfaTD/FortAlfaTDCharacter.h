@@ -16,7 +16,7 @@ class AFortAlfaTDCharacter : public ACharacter, public IAbilitySystemInterface
 	GENERATED_BODY()
 
 private:
-
+	
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* TopDownCameraComponent;
@@ -64,6 +64,6 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	
+	void Move(const FVector2D& Input);
 };
 

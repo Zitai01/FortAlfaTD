@@ -98,7 +98,7 @@ void UFortWidget_ConfirmScreen::InitConfirmScreen(UConfirmScreenInfoObject* InSc
 		}
 		UFortCommonButtonBase* AddedButton =  DynamicEntryBox->CreateEntry<UFortCommonButtonBase>();
 		AddedButton->SetButtonText(AvaliableButtonInfo.ButtonTextToDisplay);
-		AddedButton->SetTriggeredInputAction(InputActionRowHandle);
+		AddedButton->SetTriggeringInputAction(InputActionRowHandle);
 		AddedButton->OnClicked().AddLambda(
 			[ClickedButtonCallback,AvaliableButtonInfo,this]()
 			{
