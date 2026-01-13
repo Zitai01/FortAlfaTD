@@ -31,11 +31,11 @@ AFortTowerBase::AFortTowerBase()
 	AttackRangeSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	AttackRangeSphere->SetCollisionObjectType(ECC_WorldDynamic);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-	//AttackRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // enemies
 	AttackRangeSphere->SetGenerateOverlapEvents(true);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-	//AttackRangeSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//AttackRangeSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+
+
+	
 	
 }
 
@@ -57,13 +57,7 @@ void AFortTowerBase::BeginPlay()
 		TurretMesh->AttachToComponent(
 			MountMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Mount_Weapon_R");
 	}
-	/*
-	if (ShootAbility && FortAbilitySystemComp)
-	{
-		FGameplayAbilitySpec AbilitySpec(ShootAbility, 1, INDEX_NONE, this);
-		FortAbilitySystemComp->GiveAbility(AbilitySpec);
-	}
-	*/
+
 	FortAbilitySystemComp->InitAbilityActorInfo(this, this);
 	for (TSubclassOf<UGameplayAbility> ability : AbilitySet->Abilities )
 	{
@@ -260,8 +254,30 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 	
 	if (FortAbilitySystemComp)
 	{
-		AbilityTag = FGameplayTag::RequestGameplayTag(FName("Abilities.Skill.ShootBullet"));
+		const FGameplayTag TagToUse = PrimaryAttackTag.IsValid()
+	? PrimaryAttackTag
+	: FGameplayTag::RequestGameplayTag(FName("Abilities.Skill.ShootBullet"));
+		
+		if (bIsChanneledAttack)
+		{
+			// If already active, do NOT re-trigger
+			TArray<FGameplayAbilitySpec*> MatchingSpecs;
+			FortAbilitySystemComp->GetActivatableGameplayAbilitySpecsByAllMatchingTags(
+				TagToUse.GetSingleTagContainer(), MatchingSpecs, /*bOnlyAbilitiesThatSatisfyTagRequirements*/ false
+			);
 
-		FortAbilitySystemComp->TryActivateAbilitiesByTag(AbilityTag.GetSingleTagContainer());
+			for (FGameplayAbilitySpec* Spec : MatchingSpecs)
+			{
+				if (Spec && Spec->IsActive())
+				{
+					return; // channel already running
+				}
+				UE_LOG(LogTemp, Verbose, TEXT("[Tower:%s] Channel check: %s specs=%d"),
+	*GetName(), *TagToUse.ToString(), MatchingSpecs.Num());
+
+			}
+		}
+		
+		FortAbilitySystemComp->TryActivateAbilitiesByTag(TagToUse.GetSingleTagContainer());
 	}
 }

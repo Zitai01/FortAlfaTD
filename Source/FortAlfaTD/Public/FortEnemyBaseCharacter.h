@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "FortEnemyBaseCharacter.generated.h"
 
+class UGameplayEffect;
+class USphereComponent;
 class UFortEnemyDataAsset;
 
 UCLASS(abstract)
@@ -27,6 +29,38 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// ===== Melee =====
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat")
+	TObjectPtr<USphereComponent> MeleeRangeSphere;
+
+	UPROPERTY(EditDefaultsOnly, Category="Combat|Melee")
+	float MeleeRange = 180.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Combat|Melee")
+	float MeleeInterval = 0.8f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Combat|Melee")
+	float MeleeDamage = 10.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Combat|Melee")
+	TSubclassOf<UGameplayEffect> DamageGEClass;
+
+	FTimerHandle MeleeTimerHandle;
+	TWeakObjectPtr<AActor> CurrentMeleeTarget;
+
+	UFUNCTION()
+	void OnMeleeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+							UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+							bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnMeleeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+						   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	void StartMelee();
+	void StopMelee();
+	void TryMeleeAttack();
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

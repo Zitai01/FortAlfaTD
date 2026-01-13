@@ -132,10 +132,6 @@ void AFortAlfaTDPlayerController::OnTouchReleased()
 void AFortAlfaTDPlayerController::HandleMove(const FInputActionValue& Value)
 {
 	const FVector2D V = Value.Get<FVector2D>();
-	UE_LOG(LogTemp, Warning, TEXT("HandleMove: %s  Pawn=%s  IsLocal=%d"),
-	*V.ToString(),
-	*GetNameSafe(GetPawn()),
-	IsLocalController());
 	if (auto* MyChar = Cast<AFortAlfaTDCharacter>(GetPawn()))
 	{
 		MyChar->Move(Value.Get<FVector2D>());

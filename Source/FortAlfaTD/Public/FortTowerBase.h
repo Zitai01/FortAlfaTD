@@ -9,6 +9,7 @@
 #include "GameFramework/Pawn.h"
 #include "FortTowerBase.generated.h"
 
+class UNiagaraSystem;
 class UFortAbilityAsset;
 class AFortEnemyBaseCharacter;
 class USphereComponent;
@@ -79,7 +80,7 @@ protected:
 	USphereComponent* AttackRangeSphere;
 	
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UFortGA_ShootGun> ShootAbility;
+	TSubclassOf<UFortGA_ShootBase> ShootAbility;
 
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<AFortProjectileBase> ProjectileClass;
@@ -87,8 +88,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UFortAbilityAsset* AbilitySet; 
 
+	UPROPERTY(EditDefaultsOnly)
+	UNiagaraSystem* NiagaraSystem;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
+	FGameplayTag PrimaryAttackTag;
+
 	float TimeSinceLastShot = 0.f;
 	FTimerHandle TowerLogicTimerHandle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
+	bool bIsChanneledAttack = false; // laser-like: do not re-trigger while active
+
+
 public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

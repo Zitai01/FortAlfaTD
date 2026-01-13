@@ -21,7 +21,10 @@ AFortDrillCore::AFortDrillCore()
 void AFortDrillCore::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (FortAbilitySystemComp)
+	{
+		FortAbilitySystemComp->InitAbilityActorInfo(this, this);
+	}
 }
 
 // Called every frame

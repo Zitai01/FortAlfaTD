@@ -79,10 +79,7 @@ UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
 void AFortAlfaTDCharacter::Move(const FVector2D& Input)
 {
 	const FRotator YawRot(0.f, Controller->GetControlRotation().Yaw, 0.f);
-	UE_LOG(LogTemp, Warning, TEXT("Character Move: %s  Controller=%s  Mode=%d"),
-		*Input.ToString(),
-		*GetNameSafe(Controller),
-		(int32)GetCharacterMovement()->MovementMode);
+
 	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::X), Input.Y);
 	AddMovementInput(FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y), Input.X);
 }
