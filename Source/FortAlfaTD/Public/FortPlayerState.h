@@ -17,8 +17,12 @@ class FORTALFATD_API AFortPlayerState : public APlayerState, public IAbilitySyst
 
 public:
 	AFortPlayerState();
+
+	virtual void BeginPlay() override;
+
+	void GrantStartupAbilities();
 	
-	class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)

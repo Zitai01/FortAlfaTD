@@ -5,6 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "FortAbilitySystemComponent.h"
 #include "FortHealthAttributeSet.h"
+#include "FortPlayerState.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
@@ -46,7 +47,7 @@ AFortAlfaTDCharacter::AFortAlfaTDCharacter()
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false;
 
-	FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
+	//FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
 	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
 	
 	// Activate ticking in order to update the cursor every frame.
@@ -61,7 +62,7 @@ void AFortAlfaTDCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FortAbilitySystemComp->InitAbilityActorInfo(this,this);
+	//FortAbilitySystemComp->InitAbilityActorInfo(this,this);
 }
 
 void AFortAlfaTDCharacter::Tick(float DeltaSeconds)
@@ -70,10 +71,12 @@ void AFortAlfaTDCharacter::Tick(float DeltaSeconds)
 
 	// stub
 }
- 
-UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
+
+void AFortAlfaTDCharacter::PossessedBy(AController* NewController)
 {
-	return  FortAbilitySystemComp;
+	Super::PossessedBy(NewController);
+
+	InitializeAbilitySystem();
 }
 
 void AFortAlfaTDCharacter::Move(const FVector2D& Input)
@@ -89,5 +92,22 @@ void AFortAlfaTDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	const FTopLevelAssetPath EnumName("/Script/FortAlfaTD.EMyAbilitySlotsEnum");
 	FGameplayAbilityInputBinds Binds("ConfirmTargeting", "CancelTargeting", EnumName);
-	FortAbilitySystemComp->BindAbilityActivationToInputComponent(PlayerInputComponent, Binds);
+	
+	GetAbilitySystemComponent()->BindAbilityActivationToInputComponent(PlayerInputComponent, Binds);
+}
+
+UAbilitySystemComponent* AFortAlfaTDCharacter::GetAbilitySystemComponent() const
+{
+	const AFortPlayerState* PS = GetPlayerState<AFortPlayerState>();
+	return PS ? PS->GetAbilitySystemComponent() : nullptr;
+}
+
+void AFortAlfaTDCharacter::InitializeAbilitySystem()
+{
+	AFortPlayerState* PS = GetPlayerState<AFortPlayerState>();
+	if (!PS) return;
+
+	UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+
+	ASC->InitAbilityActorInfo(PS, this);
 }

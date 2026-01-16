@@ -26,9 +26,10 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 protected:
+	/*
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
 	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
-
+	*/
 	UPROPERTY()
 	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
 
@@ -64,6 +65,9 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	virtual void PossessedBy(AController* NewController) override;
+	
+	void 	InitializeAbilitySystem();
 	void Move(const FVector2D& Input);
 };
 
