@@ -146,7 +146,7 @@ void AFortEnemyBaseCharacter::TryMeleeAttack()
         return;
     }
 
-    UAbilitySystemComponent* TargetASC = Target->FindComponentByClass<UAbilitySystemComponent>();
+    UAbilitySystemComponent* TargetASC = Cast<IAbilitySystemInterface>(Target)->GetAbilitySystemComponent();
     if (!TargetASC)
     {
         StopMelee();

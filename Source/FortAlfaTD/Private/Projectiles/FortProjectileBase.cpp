@@ -5,6 +5,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "GameplayEffect.h"
 
 // ---------------------------------------------------------------------------
@@ -97,7 +98,7 @@ void AFortProjectileBase::ApplyDamageTo(AActor* OtherActor)
         return;
 
     UAbilitySystemComponent* TargetASC =
-        OtherActor->FindComponentByClass<UAbilitySystemComponent>();
+        Cast<IAbilitySystemInterface>(OtherActor)->GetAbilitySystemComponent();
 
     if (!TargetASC)
         return;

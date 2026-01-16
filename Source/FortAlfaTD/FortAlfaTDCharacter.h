@@ -29,10 +29,10 @@ protected:
 	/*
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
 	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
-	*/
+
 	UPROPERTY()
 	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
-
+	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mech")
 	USkeletalMeshComponent* BodyMesh;
 

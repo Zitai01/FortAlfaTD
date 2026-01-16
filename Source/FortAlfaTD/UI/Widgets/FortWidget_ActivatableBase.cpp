@@ -8,7 +8,8 @@ AFortMenuPlayerController* UFortWidget_ActivatableBase::GetOwningMenuPlayerContr
 {
 	if (!CachedOwningFortPC.IsValid())
 	{
-		CachedOwningFortPC = GetOwningLocalPlayer<AFortMenuPlayerController>();
+		CachedOwningFortPC = GetOwningPlayer<AFortMenuPlayerController>();
+
 	}
 
 	return CachedOwningFortPC.IsValid()? CachedOwningFortPC.Get() : nullptr;

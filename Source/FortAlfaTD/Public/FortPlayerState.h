@@ -22,7 +22,7 @@ public:
 
 	void GrantStartupAbilities();
 	
-	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)

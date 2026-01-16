@@ -48,7 +48,7 @@ AFortAlfaTDCharacter::AFortAlfaTDCharacter()
 	TopDownCameraComponent->bUsePawnControlRotation = false;
 
 	//FortAbilitySystemComp = CreateDefaultSubobject<UFortAbilitySystemComponent>(TEXT("ASC"));
-	HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
+	//HealthSet = CreateDefaultSubobject<UFortHealthAttributeSet>(TEXT("HealthSet"));
 	
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;

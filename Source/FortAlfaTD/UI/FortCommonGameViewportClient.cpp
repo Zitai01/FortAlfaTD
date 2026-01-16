@@ -6,7 +6,4 @@
 UFortCommonGameViewportClient::UFortCommonGameViewportClient()
 	:Super()
 {
-	OnRerouteInput().BindUObject(this, &UCommonGameViewportClient::HandleRerouteInput);
-	OnRerouteAxis().BindUObject(this, &UCommonGameViewportClient::HandleRerouteAxis);
-	OnRerouteTouch().BindUObject(this, &UCommonGameViewportClient::HandleRerouteTouch);
 }
