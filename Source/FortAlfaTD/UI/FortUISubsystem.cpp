@@ -47,6 +47,36 @@ void UFortUISubsystem::PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetSt
 {
 	check(!InSoftWidgetClass.IsNull());
 
+	/*
+	UAssetManager&  AssetManager =  UAssetManager::Get();
+
+	FStreamableManager& StreamableManager =  AssetManager.GetStreamableManager();
+
+	auto LoadWidget = [InSoftWidgetClass,this,InWidgetStackTag,AysncPushStateCallback]()
+	{
+		UClass* LoadedWidgetClass = InSoftWidgetClass.Get();
+				
+		check(LoadedWidgetClass);
+				
+		UCommonActivatableWidgetContainerBase* FoundWidgetStack = CreatedPrimaryLayout->FindWidgetStackByTag(InWidgetStackTag);
+
+		UFortWidget_ActivatableBase* CreatedWidget =  FoundWidgetStack->AddWidget<UFortWidget_ActivatableBase>(
+			LoadedWidgetClass,
+			[AysncPushStateCallback](UFortWidget_ActivatableBase& CreatedWidgetInstance)
+			{
+				AysncPushStateCallback(EAsyncPushWidgetState::OnCreatedBeforePush, &CreatedWidgetInstance);
+			}
+		);
+
+		AysncPushStateCallback(EAsyncPushWidgetState::AfterPush, CreatedWidget);
+				
+	};
+
+	FStreamableDelegate Delegate = FStreamableDelegate::CreateLambda(LoadWidget);
+
+	StreamableManager.RequestAsyncLoad(InSoftWidgetClass.ToSoftObjectPath(), Delegate);
+	*/
+	
 	UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(
 		InSoftWidgetClass.ToSoftObjectPath(),
 		FStreamableDelegate::CreateLambda(
@@ -95,8 +125,8 @@ void UFortUISubsystem::PushConfirmScreenToModalStackAynsc(EConfirmScreenType InS
 	check(CreatedInfoObject);
 
 	PushSoftWidgetToStackAsync(
-		FortUIGameplayTags::FortUI_WidgetStack_Modal,
-		UFortFunctionLibrary::GetFortSoftWidgetClassByTag(FortUIGameplayTags::FortUI_Widget_ConfirmScreen),
+		FortUI::WidgetStack::Modal,
+		UFortFunctionLibrary::GetFortSoftWidgetClassByTag(FortUI::Widget::ConfirmScreen),
 		[CreatedInfoObject,ButtonClickedCallback](EAsyncPushWidgetState InPushState, UFortWidget_ActivatableBase* PushedWidget)
 		{
 			if (InPushState == EAsyncPushWidgetState::OnCreatedBeforePush)

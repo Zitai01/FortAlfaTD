@@ -11,7 +11,7 @@ class UCommonTextBlock;
 /**
  * 
  */
-UCLASS(Abstract,BlueprintType, meta = (DisableNaiveTick))
+UCLASS(Abstract,BlueprintType, meta = (DisableNativeTick))
 class FORTALFATD_API UFortCommonButtonBase : public UCommonButtonBase
 {
 	GENERATED_BODY()

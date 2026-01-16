@@ -39,6 +39,8 @@ protected:
 	void RotateToFaceEnemy(float DeltaTime);
 	
 	void TryShoot(float DeltaTime);
+
+	void AudioUpdate();
 	
 	void TowerUpdate();
 	
@@ -72,6 +74,25 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
 	UStaticMeshComponent* TurretMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Audio")
+	UAudioComponent* RotatingAudioComp;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	USoundBase* BaseRotationMetaSound;
+	
+	bool bRotationAudioPlaying  = false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	float RotationStartThresholdDegPerSec  = 5.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	float RotationStopThresholdDegPerSec  = .5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	float RotationStopFadeSec = .05f;
+
+	float MountRotationYawDeg = 0.f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
 	USceneComponent* MuzzlePoint;
@@ -95,7 +116,10 @@ protected:
 	FGameplayTag PrimaryAttackTag;
 
 	float TimeSinceLastShot = 0.f;
+	
 	FTimerHandle TowerLogicTimerHandle;
+	
+	FTimerHandle AudioLogicTimerHandle;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
 	bool bIsChanneledAttack = false; // laser-like: do not re-trigger while active

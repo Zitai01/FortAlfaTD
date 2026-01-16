@@ -2,16 +2,22 @@
 
 #include "FortUIGameplayTags.h"
 
-namespace FortUIGameplayTags
+namespace FortUI
 {
-	//Fort Widget Stack
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_WidgetStack_Modal,"FortUI.WidgetStack.Modal");
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_WidgetStack_GameMenu,"FortUI.WidgetStack.GameMenu");
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_WidgetStack_GameHud,"FortUI.WidgetStack.GameHud");
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_WidgetStack_Frontend,"FortUI.WidgetStack.Frontend");
+	namespace Widget
+	{
+		UE_DEFINE_GAMEPLAY_TAG(PressAnyKeyScreen,"FortUI.Widget.PressAnyKeyScreen");
+		UE_DEFINE_GAMEPLAY_TAG(MainMenuScreen,"FortUI.Widget.MainMenuScreen");
+		UE_DEFINE_GAMEPLAY_TAG(ConfirmScreen,"FortUI.Widget.ConfirmScreen");
+		
+	}
 
-	//Fort Widgets
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_Widget_PressAnyKeyScreen,"FortUI.Widget.PressAnyKeyScreen");
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_Widget_MainMenuScreen,"FortUI.Widget.MainMenuScreen");
-	UE_DEFINE_GAMEPLAY_TAG(FortUI_Widget_ConfirmScreen,"FortUI.Widget.ConfirmScreen");
+	namespace WidgetStack
+	{
+		UE_DEFINE_GAMEPLAY_TAG(Modal,"FortUI.WidgetStack.Modal");
+		UE_DEFINE_GAMEPLAY_TAG(GameMenu,"FortUI.WidgetStack.GameMenu");
+		UE_DEFINE_GAMEPLAY_TAG(GameHud,"FortUI.WidgetStack.GameHud");
+		UE_DEFINE_GAMEPLAY_TAG(Frontend,"FortUI.WidgetStack.Frontend");
+	}
+	
 }

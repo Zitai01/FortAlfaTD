@@ -7,6 +7,7 @@
 #include "FortEnemyBaseCharacter.h"
 #include "FortHealthAttributeSet.h"
 #include "FortTowerAttributeSet.h"
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "Data/FortAbilityAsset.h"
 // Sets default values
@@ -34,7 +35,10 @@ AFortTowerBase::AFortTowerBase()
 	AttackRangeSphere->SetGenerateOverlapEvents(true);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 
-
+	RotatingAudioComp = CreateDefaultSubobject<UAudioComponent>("RotatingAudioComp");
+	RotatingAudioComp->SetupAttachment(RootComponent);
+	RotatingAudioComp->bAutoActivate = false;
+	RotatingAudioComp->bAllowSpatialization = true;
 	
 	
 }
@@ -46,7 +50,10 @@ void AFortTowerBase::BeginPlay()
 	
 	AttackRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyEnterRange);
 	AttackRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyExitRange);
+	GetWorld()->GetTimerManager().SetTimer(AudioLogicTimerHandle, this, &AFortTowerBase::AudioUpdate,0.5f,true);
 	GetWorld()->GetTimerManager().SetTimer(TowerLogicTimerHandle, this, &AFortTowerBase::TowerUpdate,0.05f,true);
+	
+
 	if (BaseMesh->DoesSocketExist("Mount_Top") && MountMesh->GetStaticMesh())
 	{
 		MountMesh->AttachToComponent(
@@ -77,6 +84,14 @@ void AFortTowerBase::BeginPlay()
 			FortAbilitySystemComp->ApplyGameplayEffectToSelf(effectInstance,1,Context);
 		}
 	}
+
+	if (RotatingAudioComp && BaseRotationMetaSound)
+	{
+		RotatingAudioComp->SetSound(BaseRotationMetaSound);
+	}
+	MountRotationYawDeg = MountMesh->GetComponentRotation().Yaw;
+
+
 }
 
 // Called to bind functionality to input
@@ -94,7 +109,14 @@ void AFortTowerBase::TowerUpdate()
 	{
 		CurrentTarget = FindNearestEnemy();
 		if (!IsEnemyValid(CurrentTarget))
-			return;
+		{
+			if (RotatingAudioComp)
+			{
+				RotatingAudioComp->Stop();
+				bRotationAudioPlaying = false;
+				return;
+			}
+		}
 	}
 	PredictTargetLocation(GetTowerAttributes()->GetProjectileSpeed());
 	RotateToFaceEnemy(DeltaTime);
@@ -214,23 +236,52 @@ AFortEnemyBaseCharacter* AFortTowerBase::FindNearestEnemy()
 
 void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 {
-	if (!CurrentTarget) return;
+
+	if (!CurrentTarget)
+	{
+		return;
+	};
 
 	FVector Dir = TargetPredictedLocation - GetActorLocation();
 	//Dir.Z = 0;
-
+	FRotator Current = MountMesh->GetComponentRotation();
 	FRotator DesiredRot = Dir.Rotation();
-
-	float Speed = 200;
-
-	FRotator NewRot = FMath::RInterpTo(
-		GetActorRotation(),
-		DesiredRot,
-		DeltaTime,
-		Speed
-	);
-	NewRot.Yaw -= 90.0f;
+	DesiredRot.Yaw -= 90.f;
+	float Speed = 150.f;
+	float NewYaw = FMath::FixedTurn(Current.Yaw, DesiredRot.Yaw, Speed * DeltaTime);
+	
+	FRotator NewRot(Current.Pitch, NewYaw , Current.Roll);
+	
 	MountMesh->SetWorldRotation(NewRot);
+	const float CurrentYaw = NewRot.Yaw;
+	const float DeltaYaw = FMath::FindDeltaAngleDegrees(MountRotationYawDeg, CurrentYaw);
+	const float YawRotationPerSec = FMath::Abs(DeltaYaw) / DeltaTime ;
+	MountRotationYawDeg = CurrentYaw;
+
+	if (RotatingAudioComp)
+	{
+		const bool bShouldStart = (YawRotationPerSec >= RotationStartThresholdDegPerSec);
+		const bool bShouldStop  = (YawRotationPerSec <= RotationStopThresholdDegPerSec);
+		
+		if (bShouldStart && !bRotationAudioPlaying)
+		{
+			bRotationAudioPlaying = true;
+			RotatingAudioComp->Play();
+			UE_LOG(LogTemp, Warning, TEXT("RotAudio state: %d"), (int32)RotatingAudioComp->GetPlayState());
+
+		}
+	
+		else if (bShouldStop && bRotationAudioPlaying)
+		{
+			bRotationAudioPlaying = false;
+			RotatingAudioComp->Stop();
+			UE_LOG(LogTemp, Warning, TEXT("RotAudio state: %d"), (int32)RotatingAudioComp->GetPlayState());
+
+		}
+
+		RotatingAudioComp->SetFloatParameter(TEXT("RotationSpeed"), YawRotationPerSec);
+	}
+
 }
 
 void AFortTowerBase::TryShoot(float DeltaTime)
@@ -280,4 +331,9 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 		
 		FortAbilitySystemComp->TryActivateAbilitiesByTag(TagToUse.GetSingleTagContainer());
 	}
+}
+
+void AFortTowerBase::AudioUpdate()
+{
+
 }

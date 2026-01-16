@@ -10,7 +10,7 @@ class AFortMenuPlayerController;
 /**
  * 
  */
-UCLASS(Abstract,BlueprintType, meta = (DisableNaiveTick))
+UCLASS(Abstract,BlueprintType, meta = (DisableNativeTick))
 class FORTALFATD_API UFortWidget_ActivatableBase : public UCommonActivatableWidget
 {
 	GENERATED_BODY()

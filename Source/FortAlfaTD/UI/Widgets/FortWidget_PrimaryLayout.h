@@ -16,7 +16,7 @@ class UCommonActivatableWidgetContainerBase;
 /**
  * 
  */
-UCLASS(Abstract,BlueprintType, meta = (DisableNaiveTick))
+UCLASS(Abstract,BlueprintType, meta = (DisableNativeTick))
 class FORTALFATD_API UFortWidget_PrimaryLayout : public UCommonUserWidget
 {
 	GENERATED_BODY()

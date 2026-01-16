@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(Abstract,BlueprintType, meta = (DisableNaiveTick))
+UCLASS(Abstract,BlueprintType, meta = (DisableNativeTick))
 class FORTALFATD_API UFortWidget_OptionsScreen : public UFortWidget_ActivatableBase
 {
 	GENERATED_BODY()
