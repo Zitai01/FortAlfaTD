@@ -45,7 +45,7 @@ protected:
 	UNiagaraSystem* LaserBeamSystem = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category="Laser")
-	float DamageTickInterval = 0.1f;
+	float DamageTickInterval = 0.03f;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Laser")
 	TSubclassOf<UGameplayEffect> DamageGEClass;

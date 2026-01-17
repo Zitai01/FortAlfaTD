@@ -23,6 +23,7 @@ UFortGA_ShootLaser::UFortGA_ShootLaser()
 
 void UFortGA_ShootLaser::PerformShoot(AFortTowerBase* Tower)
 {
+	/*
 	if (!Tower || !Tower->CurrentTarget || !DamageGEClass)
 		return;
 
@@ -84,7 +85,7 @@ void UFortGA_ShootLaser::PerformShoot(AFortTowerBase* Tower)
 			Comp->SetVectorParameter(TEXT("User.Beam_End"), End);
 		}
 	}
-
+*/
 }
 
 void UFortGA_ShootLaser::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
