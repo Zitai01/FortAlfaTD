@@ -21,3 +21,11 @@ namespace FortUI
 	}
 	
 }
+
+namespace State
+{
+	namespace Firing
+	{
+		UE_DEFINE_GAMEPLAY_TAG(Laser,"State.Firing.Laser");
+	}
+}

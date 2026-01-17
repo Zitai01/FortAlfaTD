@@ -3,6 +3,7 @@
 
 #include "Abilities/FortGA_ShootLaser.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "FortEnemyBaseCharacter.h"
 #include "FortTowerAttributeSet.h"
 #include "FortTowerBase.h"
@@ -14,7 +15,9 @@ UFortGA_ShootLaser::UFortGA_ShootLaser()
 	AbilityTags.AddTag(
 	FGameplayTag::RequestGameplayTag(FName("Abilities.Skill.LaserBeam"))
 );
-	
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
+	LaserFiringStateTag = FGameplayTag::RequestGameplayTag(TEXT("State.Firing.Laser"));
 	bUseInstantHit = true;
 }
 
@@ -56,6 +59,7 @@ void UFortGA_ShootLaser::PerformShoot(AFortTowerBase* Tower)
 		*SpecHandle.Data.Get(),
 		TargetASC
 	);
+	
 	if (LaserBeamSystem && Tower && Tower->CurrentTarget)
 	{
 		const FVector Start = Tower->GetTurretMesh() && Tower->GetTurretMesh()->DoesSocketExist("Barrel_End")
@@ -64,11 +68,14 @@ void UFortGA_ShootLaser::PerformShoot(AFortTowerBase* Tower)
 
 		const FVector End = Tower->CurrentTarget->GetActorLocation();
 
-		UNiagaraComponent* Comp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-			Tower->GetWorld(),
+		UNiagaraComponent* Comp = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			LaserBeamSystem,
-			Start,
-			FRotator::ZeroRotator
+			Tower->GetTurretMesh(),
+			TEXT("Barrel_End"),
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			false
 		);
 
 		if (Comp)
@@ -85,4 +92,116 @@ void UFortGA_ShootLaser::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	AFortTowerBase* Tower = Cast<AFortTowerBase>(GetAvatarActorFromActorInfo());
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+
+	if (!Tower || !ASC || !Tower->GetCurrentTarget())
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	// Mark "laser firing" so TowerBase won't re-activate every tick
+	ASC->AddLooseGameplayTag(LaserFiringStateTag);
+
+	// Spawn beam VFX (skip on dedicated server)
+	if (LaserBeamSystem && Tower->GetNetMode() != NM_DedicatedServer)
+	{
+		UStaticMeshComponent* Turret = Tower->GetTurretMesh(); // use your actual getter
+		const FName MuzzleSocket = TEXT("Barrel_End");
+
+		if (Turret)
+		{
+			BeamComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+				LaserBeamSystem,
+				Turret,
+				Turret->DoesSocketExist(MuzzleSocket) ? MuzzleSocket : NAME_None,
+				FVector::ZeroVector,
+				FRotator::ZeroRotator,
+				EAttachLocation::SnapToTarget,
+				false
+			);
+		}
+	}
+
+	// Start ticking (damage + beam follow)
+	if (UWorld* World = Tower->GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			LaserTickHandle,
+			this,
+			&UFortGA_ShootLaser::TickLaser,
+			DamageTickInterval,
+			true
+		);
+	}
+}
+
+void UFortGA_ShootLaser::TickLaser()
+{
+	AFortTowerBase* Tower = Cast<AFortTowerBase>(GetAvatarActorFromActorInfo());
+	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
+	if (!Tower || !SourceASC)
+	{
+		StopBeam();
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		return;
+	}
+
+	APawn* Target = Tower->GetCurrentTarget();
+	if (!Target || !Tower->IsEnemyValid(Target))
+	{
+		StopBeam();
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		return;
+	}
+
+	// Update beam end every tick (no blinking)
+	if (BeamComp)
+	{
+		BeamComp->SetVectorParameter(TEXT("User.Beam_End"), Target->GetActorLocation());
+	}
+
+	// Apply damage tick ONLY on authority
+	if (!SourceASC->GetOwner() || !SourceASC->GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
+	if (!TargetASC) return;
+}
+
+void UFortGA_ShootLaser::StopBeam()
+{
+	if (BeamComp)
+	{
+		BeamComp->Deactivate();
+		BeamComp->DestroyComponent();
+		BeamComp = nullptr;
+	}
 };
+
+void UFortGA_ShootLaser::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled)
+{
+	AFortTowerBase* Tower = Cast<AFortTowerBase>(GetAvatarActorFromActorInfo());
+	if (Tower && Tower->GetWorld())
+	{
+		Tower->GetWorld()->GetTimerManager().ClearTimer(LaserTickHandle);
+	}
+
+	StopBeam();
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		ASC->RemoveLooseGameplayTag(LaserFiringStateTag);
+	}
+
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}

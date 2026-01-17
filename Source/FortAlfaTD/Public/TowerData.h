@@ -26,7 +26,7 @@ public:
 	FScalableFloat DamageMultiplier = 1.f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
-	float FireRate = 1.f;
+	float FireRate = 100.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
 	float Range = 800.f;
@@ -36,5 +36,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
 	int32 BuildCost = 100;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
+	int32 ProjectTileSpeed = 1000;
 };

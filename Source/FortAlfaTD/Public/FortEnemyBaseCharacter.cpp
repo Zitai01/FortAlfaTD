@@ -89,7 +89,7 @@ void AFortEnemyBaseCharacter::OnMeleeBeginOverlap(UPrimitiveComponent* Overlappe
         return;
 
     // Only attack things that have an ASC (same check your projectile uses) :contentReference[oaicite:7]{index=7}
-    UAbilitySystemComponent* TargetASC = OtherActor->FindComponentByClass<UAbilitySystemComponent>();
+    UAbilitySystemComponent* TargetASC = Cast<IAbilitySystemInterface>(OtherActor)->GetAbilitySystemComponent();
     if (!TargetASC)
         return;
 

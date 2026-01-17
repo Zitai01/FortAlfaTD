@@ -7,6 +7,8 @@
 #include "FortEnemyBaseCharacter.h"
 #include "FortHealthAttributeSet.h"
 #include "FortTowerAttributeSet.h"
+#include "NiagaraComponent.h"
+#include "TowerData.h"
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "Data/FortAbilityAsset.h"
@@ -40,7 +42,8 @@ AFortTowerBase::AFortTowerBase()
 	RotatingAudioComp->bAutoActivate = false;
 	RotatingAudioComp->bAllowSpatialization = true;
 	
-	
+	LaserFiringStateTag = FGameplayTag::RequestGameplayTag(TEXT("State.Firing.Laser"));
+	LaserAbilityTag     = FGameplayTag::RequestGameplayTag(TEXT("Abilities.Skill.LaserBeam"));
 }
 
 // Called when the game starts or when spawned
@@ -91,7 +94,20 @@ void AFortTowerBase::BeginPlay()
 	}
 	MountRotationYawDeg = MountMesh->GetComponentRotation().Yaw;
 
+	FortAbilitySystemComp->SetNumericAttributeBase(
+	UFortTowerAttributeSet::GetAttackDamageAttribute(),
+	TowerData->Damage
+);
 
+	FortAbilitySystemComp->SetNumericAttributeBase(
+		UFortTowerAttributeSet::GetAttackSpeedAttribute(),
+		FMath::Max(1.f, TowerData->FireRate)
+	);
+
+	
+
+	// Update the sphere radius too (constructor currently uses the attribute default)
+	AttackRangeSphere->SetSphereRadius(TowerData->Range, true);
 }
 
 // Called to bind functionality to input
@@ -120,6 +136,16 @@ void AFortTowerBase::TowerUpdate()
 	}
 	PredictTargetLocation(GetTowerAttributes()->GetProjectileSpeed());
 	RotateToFaceEnemy(DeltaTime);
+
+	
+	if (bIsChanneledAttack)
+	{
+		// Laser mode: keep ability running while target is valid
+		EnsureChanneledAttackActive();
+
+		// IMPORTANT: don't run interval-based TryShoot for channeled towers
+		return;
+	}
 	TryShoot(DeltaTime);
 }
 
@@ -153,7 +179,11 @@ void AFortTowerBase::OnEnemyExitRange(
 		EnemiesWithInRange.Remove(Enemy);
 		if (CurrentTarget == Enemy)
 		{
-			CurrentTarget = nullptr; // force re-select next Tick
+			if (bIsChanneledAttack)
+			{
+				StopChanneledAttack();
+			}
+			CurrentTarget = nullptr;
 		}
 	}
 }
@@ -187,6 +217,31 @@ void AFortTowerBase::PredictTargetLocation( float ProjectileSpeed)
 		TargetPredictedLocation = P1;
 
 	TargetPredictedLocation =  P1 + V * T;
+}
+
+void AFortTowerBase::EnsureChanneledAttackActive()
+{
+	if (!FortAbilitySystemComp) return;
+	if (!IsEnemyValid(CurrentTarget)) return;
+	
+	if (FortAbilitySystemComp->HasMatchingGameplayTag(LaserFiringStateTag))
+		return;
+	
+	FGameplayTagContainer AbilityTags;
+	AbilityTags.AddTag(LaserAbilityTag);
+
+	FortAbilitySystemComp->TryActivateAbilitiesByTag(AbilityTags);
+}
+
+void AFortTowerBase::StopChanneledAttack()
+{
+	if (!FortAbilitySystemComp) return;
+
+	// Cancel the channeled laser ability (triggers EndAbility -> beam stops)
+	FGameplayTagContainer AbilityTags;
+	AbilityTags.AddTag(LaserAbilityTag);
+
+	FortAbilitySystemComp->CancelAbilities(&AbilityTags);
 }
 
 bool AFortTowerBase::IsEnemyValid(APawn* Enemy)

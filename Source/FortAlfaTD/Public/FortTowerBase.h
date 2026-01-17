@@ -9,6 +9,8 @@
 #include "GameFramework/Pawn.h"
 #include "FortTowerBase.generated.h"
 
+class UNiagaraComponent;
+class UTowerData;
 class UNiagaraSystem;
 class UFortAbilityAsset;
 class AFortEnemyBaseCharacter;
@@ -25,14 +27,15 @@ public:
 
 	AFortTowerBase();
 
-
-
+	AFortEnemyBaseCharacter* GetCurrentTarget() const { return CurrentTarget; }
 	
+
+	bool IsEnemyValid(APawn* Enemy);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	bool IsEnemyValid(APawn* Enemy);
+
 	
 	AFortEnemyBaseCharacter* FindNearestEnemy();
 	
@@ -45,6 +48,16 @@ protected:
 	void TowerUpdate();
 	
 	void PredictTargetLocation(float ProjectileSpeed) ;
+
+	void EnsureChanneledAttackActive();
+	
+	void StopChanneledAttack();
+
+
+	FGameplayTag LaserFiringStateTag;
+
+	UPROPERTY(EditDefaultsOnly, Category="Tower|Attack")
+	FGameplayTag LaserAbilityTag;
 	
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
 	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
@@ -58,9 +71,16 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UTowerData> TowerData;
+	
 	UPROPERTY()
 	TObjectPtr<class UFortTowerAttributeSet> TowerAttributeSet;
 
+	UPROPERTY()
+	TObjectPtr<UNiagaraComponent> ActiveHitScanComp;
+
+	
 	UPROPERTY()
 	TArray<AFortEnemyBaseCharacter*> EnemiesInRange;
 
