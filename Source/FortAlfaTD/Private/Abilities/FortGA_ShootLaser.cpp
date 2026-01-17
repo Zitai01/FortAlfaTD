@@ -23,69 +23,6 @@ UFortGA_ShootLaser::UFortGA_ShootLaser()
 
 void UFortGA_ShootLaser::PerformShoot(AFortTowerBase* Tower)
 {
-	/*
-	if (!Tower || !Tower->CurrentTarget || !DamageGEClass)
-		return;
-
-	AFortEnemyBaseCharacter* Target = Tower->CurrentTarget;
-	UAbilitySystemComponent* TargetASC = Target->GetAbilitySystemComponent();
-	UAbilitySystemComponent* SourceASC = Tower->GetAbilitySystemComponent();
-
-	if (!TargetASC || !SourceASC)
-		return;
-
-	// Damage from tower stats (same as base)
-	float Damage = 2.f;
-	if (const UFortTowerAttributeSet* Stats = Tower->GetTowerAttributes())
-	{
-		Damage = Stats->GetAttackDamage();
-	}
-	
-	FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
-	Context.AddInstigator(Tower, nullptr);
-	Context.AddSourceObject(Tower);
-
-	FGameplayEffectSpecHandle SpecHandle =
-		SourceASC->MakeOutgoingSpec(DamageGEClass, 1.f, Context);
-
-	if (!SpecHandle.IsValid())
-		return;
-	
-	SpecHandle.Data->SetSetByCallerMagnitude(
-		FGameplayTag::RequestGameplayTag(FName("Data.Default.Damage")),
-		Damage
-	);
-
-	SourceASC->ApplyGameplayEffectSpecToTarget(
-		*SpecHandle.Data.Get(),
-		TargetASC
-	);
-	
-	if (LaserBeamSystem && Tower && Tower->CurrentTarget)
-	{
-		const FVector Start = Tower->GetTurretMesh() && Tower->GetTurretMesh()->DoesSocketExist("Barrel_End")
-			? Tower->GetTurretMesh()->GetSocketLocation("Barrel_End")
-			: Tower->GetActorLocation();
-
-		const FVector End = Tower->CurrentTarget->GetActorLocation();
-
-		UNiagaraComponent* Comp = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			LaserBeamSystem,
-			Tower->GetTurretMesh(),
-			TEXT("Barrel_End"),
-			FVector::ZeroVector,
-			FRotator::ZeroRotator,
-			EAttachLocation::SnapToTarget,
-			false
-		);
-
-		if (Comp)
-		{
-		//	Comp->SetVectorParameter(TEXT("User.BeamStart"), Start);
-			Comp->SetVectorParameter(TEXT("User.Beam_End"), End);
-		}
-	}
-*/
 }
 
 void UFortGA_ShootLaser::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -107,7 +44,7 @@ void UFortGA_ShootLaser::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	ASC->AddLooseGameplayTag(LaserFiringStateTag);
 
 	// Spawn beam VFX (skip on dedicated server)
-	if (LaserBeamSystem && Tower->GetNetMode() != NM_DedicatedServer)
+	if (LaserBeamSystem)
 	{
 		UStaticMeshComponent* Turret = Tower->GetTurretMesh(); // use your actual getter
 		const FName MuzzleSocket = TEXT("Barrel_End");
@@ -150,7 +87,7 @@ void UFortGA_ShootLaser::TickLaser()
 		return;
 	}
 
-	APawn* Target = Tower->GetCurrentTarget();
+	AFortEnemyBaseCharacter* Target = Tower->GetCurrentTarget();
 	if (!Target || !Tower->IsEnemyValid(Target))
 	{
 		StopBeam();
@@ -169,9 +106,41 @@ void UFortGA_ShootLaser::TickLaser()
 	{
 		return;
 	}
+	
+	UAbilitySystemComponent* TargetASC = Target->GetAbilitySystemComponent();
 
-	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
-	if (!TargetASC) return;
+	if (!SourceASC || !TargetASC)
+	{
+		return;
+	}
+
+	// Treat AttackDamage as DPS, apply per tick:
+	float DPS = 2.f;
+	if (const UFortTowerAttributeSet* Stats = Tower->GetTowerAttributes())
+	{
+		DPS = Stats->GetAttackDamage();
+	}
+	const float DamageThisTick = DPS * DamageTickInterval; // DamageTickInterval is your timer period
+
+	FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
+	Context.AddInstigator(Tower, nullptr);
+	Context.AddSourceObject(Tower);
+
+	FGameplayEffectSpecHandle SpecHandle =
+		SourceASC->MakeOutgoingSpec(DamageGEClass, 1.f, Context);
+
+	if (!SpecHandle.IsValid())
+		return;
+
+	SpecHandle.Data->SetSetByCallerMagnitude(
+		FGameplayTag::RequestGameplayTag(FName("Data.Default.Damage")),
+		DamageThisTick
+	);
+
+	SourceASC->ApplyGameplayEffectSpecToTarget(
+		*SpecHandle.Data.Get(),
+		TargetASC
+	);
 }
 
 void UFortGA_ShootLaser::StopBeam()
