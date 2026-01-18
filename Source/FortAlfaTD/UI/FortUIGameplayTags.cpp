@@ -8,6 +8,7 @@ namespace FortUI
 	{
 		UE_DEFINE_GAMEPLAY_TAG(PressAnyKeyScreen,"FortUI.Widget.PressAnyKeyScreen");
 		UE_DEFINE_GAMEPLAY_TAG(MainMenuScreen,"FortUI.Widget.MainMenuScreen");
+		UE_DEFINE_GAMEPLAY_TAG(OptionScreen,"FortUI.Widget.OptionScreen");
 		UE_DEFINE_GAMEPLAY_TAG(ConfirmScreen,"FortUI.Widget.ConfirmScreen");
 		
 	}

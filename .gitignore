@@ -73,3 +73,41 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+
+# =========================
+# FMOD - Generated Content
+# =========================
+
+# FMOD built banks (generated output)
+Content/FMOD/Desktop/*
+Content/FMOD/Mobile/*
+Content/FMOD/Console/*
+Content/FMOD/HTML5/*
+Content/FMOD/Build/*
+
+# Optional: ignore all bank outputs
+Content/FMOD/**/*.bank
+Content/FMOD/**/*.strings.bank
+
+# FMOD cache & logs
+Content/FMOD/.cache/
+Content/FMOD/*.log
+
+# =========================
+# FMOD Studio User Files
+# =========================
+
+# Local user data (DO NOT COMMIT)
+.fmod/
+*.fspro.user
+*.fspro.lock
+*.fspro.cache
+
+# =========================
+# FMOD Binaries (Optional)
+# =========================
+
+# If using prebuilt FMOD binaries (recommended to ignore)
+Plugins/FMOD/Binaries/
+Plugins/FMOD/Intermediate/

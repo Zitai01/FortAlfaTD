@@ -38,8 +38,7 @@ void UFortUISubsystem::RegisterCreatedPrimaryLayoutWidget(UFortWidget_PrimaryLay
 	check(InCreatedWidget);
 
 	CreatedPrimaryLayout = InCreatedWidget;
-
-	Debug::Print(TEXT("PrimaryLayoutWidget stored"));
+	
 }
 
 void UFortUISubsystem::PushSoftWidgetToStackAsync(const FGameplayTag& InWidgetStackTag,
