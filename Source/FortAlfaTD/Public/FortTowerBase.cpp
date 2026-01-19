@@ -291,53 +291,85 @@ AFortEnemyBaseCharacter* AFortTowerBase::FindNearestEnemy()
 
 void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 {
+	if (!CurrentTarget) return;
+	if (!MountMesh || !TurretMesh) return;
 
-	if (!CurrentTarget)
-	{
-		return;
-	};
+	// --- Aim directions ---
+	const FVector MountLoc  = MountMesh->GetComponentLocation();
+	const FVector TurretLoc = TurretMesh->GetComponentLocation();
 
-	FVector Dir = TargetPredictedLocation - GetActorLocation();
-	//Dir.Z = 0;
-	FRotator Current = MountMesh->GetComponentRotation();
-	FRotator DesiredRot = Dir.Rotation();
-	DesiredRot.Yaw -= 90.f;
-	float Speed = 150.f;
-	float NewYaw = FMath::FixedTurn(Current.Yaw, DesiredRot.Yaw, Speed * DeltaTime);
-	
-	FRotator NewRot(Current.Pitch, NewYaw , Current.Roll);
-	
-	MountMesh->SetWorldRotation(NewRot);
-	const float CurrentYaw = NewRot.Yaw;
-	const float DeltaYaw = FMath::FindDeltaAngleDegrees(MountRotationYawDeg, CurrentYaw);
-	const float YawRotationPerSec = FMath::Abs(DeltaYaw) / DeltaTime ;
-	MountRotationYawDeg = CurrentYaw;
+	// Yaw should ignore height
+	FVector DirYawWorld = TargetPredictedLocation - MountLoc;
+	DirYawWorld.Z = 0.f;
+	if (DirYawWorld.IsNearlyZero()) return;
+
+	const FVector AimDirWorld = (TargetPredictedLocation - TurretLoc).GetSafeNormal();
+	if (AimDirWorld.IsNearlyZero()) return;
+
+	// ----------------------------
+	// 1) YAW (MountMesh) - RELATIVE
+	// ----------------------------
+	// Desired world yaw (your mesh offset kept)
+	float DesiredWorldYaw = DirYawWorld.Rotation().Yaw - 90.f;
+
+	// Convert desired world yaw into parent space yaw
+	const USceneComponent* Parent = MountMesh->GetAttachParent();
+	const float ParentWorldYaw = Parent ? Parent->GetComponentRotation().Yaw : GetActorRotation().Yaw;
+
+	// "Desired yaw relative to parent"
+	const float DesiredRelYaw = FMath::FindDeltaAngleDegrees(ParentWorldYaw, DesiredWorldYaw);
+
+	FRotator MountRel = MountMesh->GetRelativeRotation();
+
+	const float Speed = 150.f;
+	MountRel.Yaw = FMath::FixedTurn(MountRel.Yaw, DesiredRelYaw, Speed * DeltaTime);
+
+	MountMesh->SetRelativeRotation(MountRel);
+
+	// ----------------------------
+	// 2) ELEVATION (TurretMesh) - RELATIVE (you use Roll)
+	// ----------------------------
+	// IMPORTANT: compute elevation in the mount frame (more stable than turret frame)
+	const FVector AimDirLocalToMount =
+		MountMesh->GetComponentTransform().InverseTransformVectorNoScale(AimDirWorld);
+
+	// Your asset seems forward = +Y, elevation uses Roll
+	float DesiredRoll = FMath::RadiansToDegrees(FMath::Atan2(AimDirLocalToMount.Z, AimDirLocalToMount.Y));
+	DesiredRoll = FMath::Clamp(DesiredRoll, -60.f, 80.f);
+	DesiredRoll *= -1.f; // keep your sign fix
+
+	FRotator TurretRel = TurretMesh->GetRelativeRotation();
+	TurretRel.Roll = FMath::FixedTurn(TurretRel.Roll, DesiredRoll, Speed * DeltaTime);
+	TurretMesh->SetRelativeRotation(TurretRel);
+
+	// ----------------------------
+	// Rotation Audio (measure WORLD yaw after rotation)
+	// ----------------------------
+	const float CurrentWorldYaw = MountMesh->GetComponentRotation().Yaw;
+	const float DeltaYaw = FMath::FindDeltaAngleDegrees(MountRotationYawDeg, CurrentWorldYaw);
+	const float YawRotationPerSec = FMath::Abs(DeltaYaw) / FMath::Max(DeltaTime, KINDA_SMALL_NUMBER);
+	MountRotationYawDeg = CurrentWorldYaw;
 
 	if (RotatingAudioComp)
 	{
 		const bool bShouldStart = (YawRotationPerSec >= RotationStartThresholdDegPerSec);
 		const bool bShouldStop  = (YawRotationPerSec <= RotationStopThresholdDegPerSec);
-		
+
 		if (bShouldStart && !bRotationAudioPlaying)
 		{
 			bRotationAudioPlaying = true;
 			RotatingAudioComp->Play();
-			UE_LOG(LogTemp, Warning, TEXT("RotAudio state: %d"), (int32)RotatingAudioComp->GetPlayState());
-
 		}
-	
 		else if (bShouldStop && bRotationAudioPlaying)
 		{
 			bRotationAudioPlaying = false;
 			RotatingAudioComp->Stop();
-			UE_LOG(LogTemp, Warning, TEXT("RotAudio state: %d"), (int32)RotatingAudioComp->GetPlayState());
-
 		}
 
 		RotatingAudioComp->SetFloatParameter(TEXT("RotationSpeed"), YawRotationPerSec);
 	}
-
 }
+
 
 void AFortTowerBase::TryShoot(float DeltaTime)
 {
