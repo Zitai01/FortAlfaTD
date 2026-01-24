@@ -89,6 +89,11 @@ void UFortHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMod
 				DamageCueParams.NormalizedMagnitude = 1.f;
 				DamageCueParams.RawMagnitude = DamageNumber;
 				OwningAbilitySystemComponent->ExecuteGameplayCue(DamageCueTag, DamageCueParams);
+				const FGameplayTag HitFlashCueTag = FGameplayTag::RequestGameplayTag(FName("GameplayCue.HitFlash"), /*ErrorIfNotFound=*/true);
+				FGameplayCueParameters HitFlashCueParams;
+				HitFlashCueParams.NormalizedMagnitude = 1.f;
+				HitFlashCueParams.RawMagnitude = 1.f;
+				OwningAbilitySystemComponent->ExecuteGameplayCue(HitFlashCueTag, HitFlashCueParams);
 			}
 
 		}

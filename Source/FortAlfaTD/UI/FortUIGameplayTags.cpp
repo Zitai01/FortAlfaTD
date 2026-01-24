@@ -30,3 +30,8 @@ namespace State
 		UE_DEFINE_GAMEPLAY_TAG(Laser,"State.Firing.Laser");
 	}
 }
+
+namespace  GameplayCue
+{
+	UE_DEFINE_GAMEPLAY_TAG(HitFlash,"GameplayCue.HitFlash");
+}

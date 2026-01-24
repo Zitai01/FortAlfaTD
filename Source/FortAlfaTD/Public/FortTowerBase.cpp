@@ -291,14 +291,16 @@ AFortEnemyBaseCharacter* AFortTowerBase::FindNearestEnemy()
 
 void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 {
+
+	const bool bIsUpsideDown =
+	FVector::DotProduct(MountMesh->GetUpVector(), FVector::UpVector) < 0.f;
+	
 	if (!CurrentTarget) return;
 	if (!MountMesh || !TurretMesh) return;
-
-	// --- Aim directions ---
+	
 	const FVector MountLoc  = MountMesh->GetComponentLocation();
 	const FVector TurretLoc = TurretMesh->GetComponentLocation();
-
-	// Yaw should ignore height
+	
 	FVector DirYawWorld = TargetPredictedLocation - MountLoc;
 	DirYawWorld.Z = 0.f;
 	if (DirYawWorld.IsNearlyZero()) return;
@@ -306,19 +308,20 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 	const FVector AimDirWorld = (TargetPredictedLocation - TurretLoc).GetSafeNormal();
 	if (AimDirWorld.IsNearlyZero()) return;
 
-	// ----------------------------
-	// 1) YAW (MountMesh) - RELATIVE
-	// ----------------------------
-	// Desired world yaw (your mesh offset kept)
+
 	float DesiredWorldYaw = DirYawWorld.Rotation().Yaw - 90.f;
 
-	// Convert desired world yaw into parent space yaw
+
 	const USceneComponent* Parent = MountMesh->GetAttachParent();
 	const float ParentWorldYaw = Parent ? Parent->GetComponentRotation().Yaw : GetActorRotation().Yaw;
 
-	// "Desired yaw relative to parent"
-	const float DesiredRelYaw = FMath::FindDeltaAngleDegrees(ParentWorldYaw, DesiredWorldYaw);
 
+	float DesiredRelYaw = FMath::FindDeltaAngleDegrees(ParentWorldYaw, DesiredWorldYaw);
+
+	if (bIsUpsideDown)
+	{
+		DesiredRelYaw *= -1.f;
+	}
 	FRotator MountRel = MountMesh->GetRelativeRotation();
 
 	const float Speed = 150.f;
@@ -326,25 +329,21 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 
 	MountMesh->SetRelativeRotation(MountRel);
 
-	// ----------------------------
-	// 2) ELEVATION (TurretMesh) - RELATIVE (you use Roll)
-	// ----------------------------
-	// IMPORTANT: compute elevation in the mount frame (more stable than turret frame)
+	
 	const FVector AimDirLocalToMount =
 		MountMesh->GetComponentTransform().InverseTransformVectorNoScale(AimDirWorld);
 
-	// Your asset seems forward = +Y, elevation uses Roll
+	//  forward = +Y
 	float DesiredRoll = FMath::RadiansToDegrees(FMath::Atan2(AimDirLocalToMount.Z, AimDirLocalToMount.Y));
-	DesiredRoll = FMath::Clamp(DesiredRoll, -60.f, 80.f);
-	DesiredRoll *= -1.f; // keep your sign fix
-
+	//DesiredRoll = FMath::Clamp(DesiredRoll, -60.f, 80.f);
+	DesiredRoll *= -1.f;
+	
 	FRotator TurretRel = TurretMesh->GetRelativeRotation();
 	TurretRel.Roll = FMath::FixedTurn(TurretRel.Roll, DesiredRoll, Speed * DeltaTime);
 	TurretMesh->SetRelativeRotation(TurretRel);
 
-	// ----------------------------
-	// Rotation Audio (measure WORLD yaw after rotation)
-	// ----------------------------
+
+	// Rotation Audio 
 	const float CurrentWorldYaw = MountMesh->GetComponentRotation().Yaw;
 	const float DeltaYaw = FMath::FindDeltaAngleDegrees(MountRotationYawDeg, CurrentWorldYaw);
 	const float YawRotationPerSec = FMath::Abs(DeltaYaw) / FMath::Max(DeltaTime, KINDA_SMALL_NUMBER);

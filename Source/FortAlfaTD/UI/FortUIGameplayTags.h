@@ -32,3 +32,8 @@ namespace State
 		FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Laser);
 	}
 }
+
+namespace GameplayCue
+{
+	FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(HitFlash);
+}
