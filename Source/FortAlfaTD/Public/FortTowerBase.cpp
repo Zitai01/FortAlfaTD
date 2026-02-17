@@ -119,7 +119,7 @@ void AFortTowerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AFortTowerBase::TowerUpdate()
 {
-	float DeltaTime = 0.05f;
+	float DeltaTime = 0.2f;
 	
 	if (!IsEnemyValid(CurrentTarget))
 	{

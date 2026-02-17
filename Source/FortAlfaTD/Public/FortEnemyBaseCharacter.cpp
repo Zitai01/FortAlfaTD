@@ -35,6 +35,11 @@ void AFortEnemyBaseCharacter::BeginPlay()
 	}
 	MeleeRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AFortEnemyBaseCharacter::OnMeleeBeginOverlap);
 	MeleeRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AFortEnemyBaseCharacter::OnMeleeEndOverlap);
+	if (HealthSet)
+	{
+		HealthSet->SetMaxHealth(2000);
+		HealthSet->SetHealth(2000);
+	}
 }
 
 // Called every frame
