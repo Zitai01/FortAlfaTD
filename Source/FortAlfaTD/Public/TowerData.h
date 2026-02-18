@@ -38,5 +38,5 @@ public:
 	int32 BuildCost = 100;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower")
-	int32 ProjectTileSpeed = 1000;
+	int32 ProjectTileSpeed = 6000;
 };

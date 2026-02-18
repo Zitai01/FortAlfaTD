@@ -25,7 +25,7 @@ AFortProjectileBase::AFortProjectileBase()
     // --- Projectile Movement ---
     ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
     ProjectileMovementComp->InitialSpeed = 8000.f;
-    ProjectileMovementComp->MaxSpeed = 100000.f;
+    ProjectileMovementComp->MaxSpeed =  10000.f;
     ProjectileMovementComp->bRotationFollowsVelocity = true;
     ProjectileMovementComp->ProjectileGravityScale = 0.f;
     ProjectileMovementComp->SetUpdatedComponent(CollisionComponent);
@@ -38,10 +38,12 @@ AFortProjectileBase::AFortProjectileBase()
     StaticMeshComp->SetCollisionProfileName(TEXT("Projectile"));
 
     // --- Niagara Trail ---
+    /*
     NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailFX"));
     NiagaraComp->SetupAttachment(StaticMeshComp);
     NiagaraComp->SetAutoActivate(true);
-    InitialLifeSpan = 10.0f;  
+    */
+    InitialLifeSpan = 5.0f;  
     SetActorEnableCollision(true);
 }
 

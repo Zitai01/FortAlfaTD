@@ -119,7 +119,7 @@ void AFortTowerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AFortTowerBase::TowerUpdate()
 {
-	float DeltaTime = 0.2f;
+	float DeltaTime = 0.1f;
 	
 	if (!IsEnemyValid(CurrentTarget))
 	{
@@ -348,7 +348,7 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 	const float DeltaYaw = FMath::FindDeltaAngleDegrees(MountRotationYawDeg, CurrentWorldYaw);
 	const float YawRotationPerSec = FMath::Abs(DeltaYaw) / FMath::Max(DeltaTime, KINDA_SMALL_NUMBER);
 	MountRotationYawDeg = CurrentWorldYaw;
-
+	/*
 	if (RotatingAudioComp)
 	{
 		const bool bShouldStart = (YawRotationPerSec >= RotationStartThresholdDegPerSec);
@@ -366,7 +366,9 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 		}
 
 		RotatingAudioComp->SetFloatParameter(TEXT("RotationSpeed"), YawRotationPerSec);
+		
 	}
+	*/
 }
 
 
@@ -374,7 +376,7 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 {
 	TimeSinceLastShot += DeltaTime;
 
-	float Interval = 1 / TowerAttributeSet->GetAttackSpeed();
+	float Interval = 1/ TowerAttributeSet->GetAttackSpeed();
 	if (TimeSinceLastShot < Interval)
 		return;
 

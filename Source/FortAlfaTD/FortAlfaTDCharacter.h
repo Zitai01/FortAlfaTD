@@ -25,6 +25,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
+
 protected:
 	/*
 	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)

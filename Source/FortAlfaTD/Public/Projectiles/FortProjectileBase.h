@@ -34,9 +34,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	UProjectileMovementComponent* ProjectileMovementComp;
 
+	/*
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UNiagaraComponent> NiagaraComp;
-
+	*/
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> StaticMeshComp;
 

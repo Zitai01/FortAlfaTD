@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "FortAlfaTD.h"
+#include "GameFramework/SpringArmComponent.h"
 
 AFortAlfaTDPlayerController::AFortAlfaTDPlayerController()
 {
@@ -43,7 +44,9 @@ void AFortAlfaTDPlayerController::SetupInputComponent()
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 		{
 			EnhancedInputComponent->BindAction(IAMove, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleMove);
-			
+			// FortAlfaTDPlayerController.cpp
+			EnhancedInputComponent->BindAction(IAZoom, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleZoom);
+
 			// Setup mouse input events
 			/*
 			EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AFortAlfaTDPlayerController::OnInputStarted);
@@ -64,6 +67,25 @@ void AFortAlfaTDPlayerController::SetupInputComponent()
 			UE_LOG(LogFortAlfaTD, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 		}
 	}
+}
+void AFortAlfaTDPlayerController::HandleZoom(const FInputActionValue& Value)
+{
+	const float Wheel = Value.Get<float>();
+	if (FMath::IsNearlyZero(Wheel)) return;
+
+	AFortAlfaTDCharacter* MyChar = Cast<AFortAlfaTDCharacter>(GetPawn());
+	if (!MyChar) return;
+
+	USpringArmComponent* Boom = MyChar->GetCameraBoom();
+	if (!Boom) return;
+
+	const float NewLen = FMath::Clamp(
+		Boom->TargetArmLength - Wheel * ZoomSpeed,
+		MinZoom,
+		MaxZoom
+	);
+
+	Boom->TargetArmLength = NewLen;
 }
 
 void AFortAlfaTDPlayerController::OnInputStarted()

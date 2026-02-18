@@ -44,7 +44,15 @@ protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* SetDestinationTouchAction;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
+	float ZoomSpeed = 300.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
+	float MinZoom = 500.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
+	float MaxZoom = 3000.f;
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
 
@@ -65,9 +73,10 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
 	TObjectPtr<const UInputAction> IAMove;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	TObjectPtr<const UInputAction> IAZoom;
 	/** Initialize input bindings */
 	virtual void SetupInputComponent() override;
-	
 	/** Input handlers */
 	void OnInputStarted();
 	void OnSetDestinationTriggered();
@@ -75,7 +84,7 @@ protected:
 	void OnTouchTriggered();
 	void OnTouchReleased();
 	void HandleMove(const FInputActionValue& Value);
-
+	void HandleZoom(const FInputActionValue& Value);
 };
 
 

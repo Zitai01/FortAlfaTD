@@ -60,6 +60,27 @@ void UFortGA_ShootLaser::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 				EAttachLocation::SnapToTarget,
 				false
 			);
+			AActor* TargetActor = nullptr;
+			if (Tower)
+			{
+				TargetActor = Tower->CurrentTarget; // or Tower->GetCurrentTarget() if you have a getter
+			}
+
+			if (BeamComp && IsValid(TargetActor))
+			{
+				const FVector BeamEnd = TargetActor->GetActorLocation(); // or socket location if you prefer
+				BeamComp->SetVectorParameter(TEXT("User.Beam_End"), BeamEnd);
+
+				// Optional: if your Niagara uses Beam_Start too
+				// const FVector BeamStart = Tower->GetMuzzleWorldLocation(); // whatever your muzzle function is
+				// BeamComp->SetVectorParameter(TEXT("User.Beam_Start"), BeamStart);
+			}
+			else if (BeamComp)
+			{
+				// No valid target yet: collapse beam so it doesn't shoot to origin
+				const FVector CollapseEnd = BeamComp->GetComponentLocation();
+				BeamComp->SetVectorParameter(TEXT("User.Beam_End"), CollapseEnd);
+			}
 		}
 	}
 

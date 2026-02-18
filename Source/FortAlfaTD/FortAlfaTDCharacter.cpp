@@ -37,7 +37,7 @@ AFortAlfaTDCharacter::AFortAlfaTDCharacter()
 
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
-	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->TargetArmLength = 400.f;
 	CameraBoom->SetRelativeRotation(FRotator(-60.f, 90.f, 0.f));
 	CameraBoom->bDoCollisionTest = false;
 
@@ -92,7 +92,6 @@ void AFortAlfaTDCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	const FTopLevelAssetPath EnumName("/Script/FortAlfaTD.EMyAbilitySlotsEnum");
 	FGameplayAbilityInputBinds Binds("ConfirmTargeting", "CancelTargeting", EnumName);
-	
 	GetAbilitySystemComponent()->BindAbilityActivationToInputComponent(PlayerInputComponent, Binds);
 }
 
