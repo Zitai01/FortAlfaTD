@@ -63,7 +63,7 @@ void UFortGA_ShootLaser::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 			AActor* TargetActor = nullptr;
 			if (Tower)
 			{
-				TargetActor = Tower->CurrentTarget; // or Tower->GetCurrentTarget() if you have a getter
+				TargetActor = Tower->GetCurrentTarget(); // or Tower->GetCurrentTarget() if you have a getter
 			}
 
 			if (BeamComp && IsValid(TargetActor))

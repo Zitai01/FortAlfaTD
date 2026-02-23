@@ -26,7 +26,7 @@ void UFortGA_ShootBase::ActivateAbility(
 	}
 
 	AFortTowerBase* Tower = Cast<AFortTowerBase>(GetAvatarActorFromActorInfo());
-	if (!Tower || !Tower->CurrentTarget)
+	if (!Tower || !Tower->GetCurrentTarget())
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
@@ -48,7 +48,7 @@ void UFortGA_ShootBase::ActivateAbility(
 
 void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 {
-	AFortEnemyBaseCharacter* Target = Tower->CurrentTarget;
+	AFortEnemyBaseCharacter* Target = Tower->GetCurrentTarget();
 	if (!Target) return;
 
 	UFortTowerAttributeSet* Stats = Tower->GetTowerAttributes();
@@ -106,7 +106,7 @@ void UFortGA_ShootBase::PerformShoot(AFortTowerBase* Tower)
 			Projectile->SetTarget(Target);
 			Projectile->SetDamage(Damage);
 			Projectile->FireInDirection(Direction);
-			Projectile->SetTarget(Tower->CurrentTarget); 
+			Projectile->SetTarget(Tower->GetCurrentTarget()); 
 		}
 	}
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();

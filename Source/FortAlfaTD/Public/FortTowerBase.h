@@ -4,165 +4,61 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameFramework/Pawn.h"
+
 #include "Abilities/FortGA_ShootBase.h"
 #include "Abilities/FortGA_ShootGun.h"
-#include "GameFramework/Pawn.h"
+
 #include "FortTowerBase.generated.h"
 
-class UNiagaraComponent;
-class UTowerData;
-class UNiagaraSystem;
-class UFortAbilityAsset;
+// Forward declarations (keep includes light)
 class AFortEnemyBaseCharacter;
-class USphereComponent;
+class AFortProjectileBase;
+
 class UAbilitySystemComponent;
+class UAudioComponent;
+class UFortAbilityAsset;
+class UFortAbilitySystemComponent;
+class UFortHealthAttributeSet;
+class UFortTowerAttributeSet;
+
+class UNiagaraComponent;
+class UNiagaraSystem;
+
+class USceneComponent;
+class USphereComponent;
+class USoundBase;
+class UStaticMeshComponent;
+
+class UTowerData;
 class UGameplayAbility;
 
 UCLASS()
-class FORTALFATD_API AFortTowerBase : public APawn,  public IAbilitySystemInterface
+class FORTALFATD_API AFortTowerBase : public APawn, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-
 	AFortTowerBase();
 
-	AFortEnemyBaseCharacter* GetCurrentTarget() const { return CurrentTarget; }
-	
-
-	bool IsEnemyValid(APawn* Enemy);
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-
-	
-	AFortEnemyBaseCharacter* FindNearestEnemy();
-	
-	void RotateToFaceEnemy(float DeltaTime);
-	
-	void TryShoot(float DeltaTime);
-
-	void AudioUpdate();
-	
-	void TowerUpdate();
-	
-	void PredictTargetLocation(float ProjectileSpeed) ;
-
-	void EnsureChanneledAttackActive();
-	
-	void StopChanneledAttack();
-
-
-	FGameplayTag LaserFiringStateTag;
-
-	UPROPERTY(EditDefaultsOnly, Category="Tower|Attack")
-	FGameplayTag LaserAbilityTag;
-	
-	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category = Abilities)
-	TObjectPtr<class UFortAbilitySystemComponent> FortAbilitySystemComp;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tower Info")
-	FName TowerName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tower Info")
-	int32 TowerLevel = 1;
-	
-	UPROPERTY()
-	TObjectPtr<class UFortHealthAttributeSet> HealthSet;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower", meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UTowerData> TowerData;
-	
-	UPROPERTY()
-	TObjectPtr<class UFortTowerAttributeSet> TowerAttributeSet;
-
-	UPROPERTY()
-	TObjectPtr<UNiagaraComponent> ActiveHitScanComp;
-
-	
-	UPROPERTY()
-	TArray<AFortEnemyBaseCharacter*> EnemiesInRange;
-
-	TArray<TObjectPtr<AFortEnemyBaseCharacter>> EnemiesWithInRange;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
-	UStaticMeshComponent* BaseMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
-	UStaticMeshComponent* MountMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
-	UStaticMeshComponent* TurretMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Audio")
-	UAudioComponent* RotatingAudioComp;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
-	USoundBase* BaseRotationMetaSound;
-	
-	bool bRotationAudioPlaying  = false;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
-	float RotationStartThresholdDegPerSec  = 5.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
-	float RotationStopThresholdDegPerSec  = .5f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
-	float RotationStopFadeSec = .05f;
-
-	float MountRotationYawDeg = 0.f;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
-	USceneComponent* MuzzlePoint;
-	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	USphereComponent* AttackRangeSphere;
-	
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UFortGA_ShootBase> ShootAbility;
-
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
-	TSubclassOf<AFortProjectileBase> ProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	UFortAbilityAsset* AbilitySet; 
-
-	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* NiagaraSystem;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
-	FGameplayTag PrimaryAttackTag;
-
-	float TimeSinceLastShot = 0.f;
-	
-	FTimerHandle TowerLogicTimerHandle;
-	
-	FTimerHandle AudioLogicTimerHandle;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
-	bool bIsChanneledAttack = false; // laser-like: do not re-trigger while active
-
-
-public:	
-	// Called to bind functionality to input
+	// APawn
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Combat")
-	TSubclassOf< AFortProjectileBase> GetProjectileClass() const { return ProjectileClass; }
-
+	// IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	// Getters
+	AFortEnemyBaseCharacter* GetCurrentTarget() const { return CurrentTarget; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Combat")
+	TSubclassOf<AFortProjectileBase> GetProjectileClass() const { return ProjectileClass; }
+	
+	bool IsEnemyValid(APawn* Enemy);
 	
 	FORCEINLINE UFortTowerAttributeSet* GetTowerAttributes() const { return TowerAttributeSet; }
-	
 	FORCEINLINE UStaticMeshComponent* GetTurretMesh() const { return TurretMesh; }
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	FVector MuzzleOffset;
-
-	FGameplayTag AbilityTag;
-	
+	// Range callbacks
 	UFUNCTION()
 	void OnEnemyEnterRange(
 		UPrimitiveComponent* OverlappedComp,
@@ -179,8 +75,158 @@ public:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
+	// Public tweakables
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	FVector MuzzleOffset;
+
+	FGameplayTag AbilityTag;
+	FVector TargetPredictedLocation;
+protected:
+	// AActor
+	virtual void BeginPlay() override;
+
+	// Core behavior
+
+
+	AFortEnemyBaseCharacter* FindNearestEnemy();
+	void TowerUpdate();
+	void TryShoot(float DeltaTime);
+	void RotateToFaceEnemy(float DeltaTime);
+	void PredictTargetLocation(float ProjectileSpeed);
+
+	// Audio
+	void AudioUpdate();
+
+	// Channeled / laser
+	void EnsureChanneledAttackActive();
+	void StopChanneledAttack();
+
+	// LOS
+	bool HasLineOfSightToTarget(AActor* Target) const;
+
+protected:
+	// -----------------------------
+	// Combat / LOS
+	// -----------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|LOS")
+	bool bRequireLineOfSight = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|LOS")
+	TEnumAsByte<ECollisionChannel> LineOfSightTraceChannel = ECC_Visibility;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|LOS")
+	float TargetAimZOffset = 40.f;
+
+	// -----------------------------
+	// Combat / GAS
+	// -----------------------------
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
+	FGameplayTag PrimaryAttackTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat|GAS")
+	bool bIsChanneledAttack = false; // laser-like: do not re-trigger while active
+
+	FGameplayTag LaserFiringStateTag;
+
+	UPROPERTY(EditDefaultsOnly, Category="Tower|Attack")
+	FGameplayTag LaserAbilityTag;
+
+	UPROPERTY(VIsibleAnywhere, BlueprintReadOnly, Category=Abilities)
+	TObjectPtr<UFortAbilitySystemComponent> FortAbilitySystemComp;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UFortGA_ShootBase> ShootAbility;
+
+	// -----------------------------
+	// Tower identity / data
+	// -----------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tower Info")
+	FName TowerName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tower Info")
+	int32 TowerLevel = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Tower", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UTowerData> TowerData;
+
+	UPROPERTY(EditDefaultsOnly)
+	UFortAbilityAsset* AbilitySet;
+
+	// -----------------------------
+	// Attributes / sets
+	// -----------------------------
+	UPROPERTY()
+	TObjectPtr<UFortHealthAttributeSet> HealthSet;
+
+	UPROPERTY()
+	TObjectPtr<UFortTowerAttributeSet> TowerAttributeSet;
+
+	// -----------------------------
+	// Components (visual / collision)
+	// -----------------------------
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	UStaticMeshComponent* BaseMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	UStaticMeshComponent* MountMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	UStaticMeshComponent* TurretMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
+	USceneComponent* MuzzlePoint;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	USphereComponent* AttackRangeSphere;
+
+	// -----------------------------
+	// Projectile / VFX
+	// -----------------------------
+	UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	TSubclassOf<AFortProjectileBase> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	UNiagaraSystem* NiagaraSystem;
+
+	UPROPERTY()
+	TObjectPtr<UNiagaraComponent> ActiveHitScanComp;
+
+	// -----------------------------
+	// Audio
+	// -----------------------------
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Audio")
+	UAudioComponent* RotatingAudioComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	USoundBase* BaseRotationMetaSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	float RotationStartThresholdDegPerSec = 5.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	float RotationStopThresholdDegPerSec = .5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
+	float RotationStopFadeSec = .05f;
+
+	bool bRotationAudioPlaying = false;
+	float MountRotationYawDeg = 0.f;
+
+	// -----------------------------
+	// Runtime state
+	// -----------------------------
+	UPROPERTY()
+	TArray<AFortEnemyBaseCharacter*> EnemiesInRange;
+
+	TArray<TObjectPtr<AFortEnemyBaseCharacter>> EnemiesWithInRange;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
 	AFortEnemyBaseCharacter* CurrentTarget = nullptr;
 
-	FVector TargetPredictedLocation;
+	
+
+	float TimeSinceLastShot = 0.f;
+
+	FTimerHandle TowerLogicTimerHandle;
+	FTimerHandle AudioLogicTimerHandle;
 };
