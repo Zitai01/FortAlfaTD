@@ -46,7 +46,11 @@ void AFortAlfaTDPlayerController::SetupInputComponent()
 			EnhancedInputComponent->BindAction(IAMove, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleMove);
 			// FortAlfaTDPlayerController.cpp
 			EnhancedInputComponent->BindAction(IAZoom, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleZoom);
-
+			EnhancedInputComponent->BindAction(IACameraRotateHold, ETriggerEvent::Started, this, &AFortAlfaTDPlayerController::HandleCameraRotateHold);
+			EnhancedInputComponent->BindAction(IACameraRotateHold, ETriggerEvent::Completed, this, &AFortAlfaTDPlayerController::HandleCameraRotateHold);
+			EnhancedInputComponent->BindAction(IACameraRotateHold, ETriggerEvent::Canceled, this, &AFortAlfaTDPlayerController::HandleCameraRotateHold);
+			EnhancedInputComponent->BindAction(IACameraLook, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleCameraLook);
+	//		EnhancedInputComponent->BindAction(IACameraTurn, ETriggerEvent::Triggered, this, &AFortAlfaTDPlayerController::HandleCameraTurn);
 			// Setup mouse input events
 			/*
 			EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AFortAlfaTDPlayerController::OnInputStarted);
@@ -153,9 +157,64 @@ void AFortAlfaTDPlayerController::OnTouchReleased()
 
 void AFortAlfaTDPlayerController::HandleMove(const FInputActionValue& Value)
 {
-	const FVector2D V = Value.Get<FVector2D>();
-	if (auto* MyChar = Cast<AFortAlfaTDCharacter>(GetPawn()))
-	{
-		MyChar->Move(Value.Get<FVector2D>());
-	}
+	const FVector2D Move = Value.Get<FVector2D>();
+	if (Move.IsNearlyZero()) return;
+
+	AFortAlfaTDCharacter* MyChar = Cast<AFortAlfaTDCharacter>(GetPawn());
+	if (!MyChar) return;
+
+	USpringArmComponent* Boom = MyChar->GetCameraBoom();
+	if (!Boom) return;
+
+	// Use the camera boom yaw as the “camera facing” direction
+	FRotator CamRot = Boom->GetComponentRotation();
+	CamRot.Pitch = 0.f;
+	CamRot.Roll  = 0.f;
+
+	const FVector Forward = FRotationMatrix(CamRot).GetUnitAxis(EAxis::X);
+	const FVector Right   = FRotationMatrix(CamRot).GetUnitAxis(EAxis::Y);
+
+	// Typical WASD: Y is forward/back, X is right/left (depends on how your IA is set)
+	MyChar->AddMovementInput(Forward, Move.Y);
+	MyChar->AddMovementInput(Right,   Move.X);
+}
+void AFortAlfaTDPlayerController::HandleCameraRotateHold(const FInputActionValue& Value)
+{
+	bCameraRotating = Value.Get<bool>();
+
+	// Optional feel improvements:
+	// bShowMouseCursor = !bCameraRotating;
+	// SetIgnoreLookInput(bCameraRotating);
+}
+
+void AFortAlfaTDPlayerController::HandleCameraLook(const FInputActionValue& Value)
+{
+	if (!bCameraRotating) return;
+
+	const FVector2D Look = Value.Get<FVector2D>();
+	if (Look.IsNearlyZero()) return;
+
+	AFortAlfaTDCharacter* MyChar = Cast<AFortAlfaTDCharacter>(GetPawn());
+	if (!MyChar) return;
+
+	USpringArmComponent* Boom = MyChar->GetCameraBoom();
+	if (!Boom) return;
+
+	const float Dt = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.f;
+
+	FRotator R = Boom->GetComponentRotation(); // use world rotation (absolute boom)
+
+	// Yaw from Mouse X
+	R.Yaw += Look.X * CameraYawSpeed * Dt;
+
+	// Pitch from Mouse Y (invert if needed)
+	R.Pitch = FMath::Clamp(
+		R.Pitch + (Look.Y * CameraPitchSpeed * Dt),
+		MinPitch,
+		MaxPitch
+	);
+
+	R.Roll = 0.f;
+
+	Boom->SetWorldRotation(R);
 }

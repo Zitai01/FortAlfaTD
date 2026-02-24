@@ -10,6 +10,7 @@
 #include "NiagaraComponent.h"
 #include "TowerData.h"
 #include "Components/AudioComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Data/FortAbilityAsset.h"
 // Sets default values
@@ -135,9 +136,17 @@ void AFortTowerBase::TowerUpdate()
 		}
 	}
 	PredictTargetLocation(GetTowerAttributes()->GetProjectileSpeed());
-	RotateToFaceEnemy(DeltaTime);
 
-	
+	if (!HasLineOfSightToTarget(CurrentTarget))
+	{
+		// If laser tower, stop the channel if LOS breaks
+		if (bIsChanneledAttack)
+		{
+			StopChanneledAttack();
+		}
+		return;
+	}
+	RotateToFaceEnemy(DeltaTime);
 	if (bIsChanneledAttack)
 	{
 		// Laser mode: keep ability running while target is valid
@@ -424,4 +433,45 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 void AFortTowerBase::AudioUpdate()
 {
 
+}
+bool AFortTowerBase::HasLineOfSightToTarget(AFortEnemyBaseCharacter* Target) const
+{
+	if (!bRequireLineOfSight) return true;
+	if (!Target || !TurretMesh) return false;
+	if (!GetWorld()) return false;
+
+	// Start from muzzle (same socket you're already using for projectile prediction)
+	FVector Start = TurretMesh->DoesSocketExist("Barrel_End")
+		? TurretMesh->GetSocketLocation("Barrel_End")
+		: TurretMesh->GetComponentLocation();
+
+	// End at enemy "center-ish"
+	FVector End = Target->GetActorLocation();
+	End.Z += TargetAimZOffset;
+
+	// Optional: if target has a capsule, aim at mid-body instead
+	if (const UCapsuleComponent* Cap = Target->FindComponentByClass<UCapsuleComponent>())
+	{
+		End = Target->GetActorLocation();
+		End.Z += Cap->GetScaledCapsuleHalfHeight() * 0.5f;
+	}
+
+	FHitResult Hit;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(TowerLOS), true);
+	Params.AddIgnoredActor(this);
+
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(
+		Hit,
+		Start,
+		End,
+		LineOfSightTraceChannel,
+		Params
+	);
+
+	// If nothing blocks, we can see it
+	if (!bHit)
+		return true;
+
+	// If first thing hit IS the target, we can see it
+	return Hit.GetActor() == Target;
 }

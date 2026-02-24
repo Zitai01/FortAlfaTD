@@ -102,7 +102,7 @@ protected:
 	void StopChanneledAttack();
 
 	// LOS
-	bool HasLineOfSightToTarget(AActor* Target) const;
+	bool HasLineOfSightToTarget(AFortEnemyBaseCharacter* Target) const;
 
 protected:
 	// -----------------------------

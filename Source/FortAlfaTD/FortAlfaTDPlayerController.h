@@ -22,7 +22,11 @@ UCLASS(abstract)
 class AFortAlfaTDPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+private:
+	bool bCameraRotating = false;
 
+	void HandleCameraRotateHold(const FInputActionValue& Value);
+	void HandleCameraLook(const FInputActionValue& Value);
 protected:
 
 	/** Time Threshold to know if it was a short press */
@@ -52,7 +56,20 @@ protected:
 	float MinZoom = 500.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
-	float MaxZoom = 3000.f;
+	float MaxZoom = 6000.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	TObjectPtr<const UInputAction> IACameraRotateHold;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	TObjectPtr<const UInputAction> IACameraTurn;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	TObjectPtr<const UInputAction> IACameraLook;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
+	float CameraYawSpeed = 180.f; // degrees/sec-ish feel (tune)
+	
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
 
@@ -64,7 +81,14 @@ protected:
 
 	/** Time that the click input has been pressed */
 	float FollowTime = 0.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Camera")
+	float CameraPitchSpeed = 120.f;
 
+	UPROPERTY(EditDefaultsOnly, Category="Camera")
+	float MinPitch = -80.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Camera")
+	float MaxPitch = -15.f;
 public:
 
 	/** Constructor */
