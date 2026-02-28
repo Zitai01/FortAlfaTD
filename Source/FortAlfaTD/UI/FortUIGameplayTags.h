@@ -37,3 +37,12 @@ namespace GameplayCue
 {
 	FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(HitFlash);
 }
+
+namespace Currency
+{
+	namespace Research
+	{
+		FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Atomic);
+		FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Photon);
+	}
+}

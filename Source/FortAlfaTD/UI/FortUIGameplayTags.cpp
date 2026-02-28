@@ -15,6 +15,7 @@ namespace FortUI
 
 	namespace WidgetStack
 	{
+		//Menu Stack
 		UE_DEFINE_GAMEPLAY_TAG(Modal,"FortUI.WidgetStack.Modal");
 		UE_DEFINE_GAMEPLAY_TAG(GameMenu,"FortUI.WidgetStack.GameMenu");
 		UE_DEFINE_GAMEPLAY_TAG(GameHud,"FortUI.WidgetStack.GameHud");
@@ -34,4 +35,13 @@ namespace State
 namespace  GameplayCue
 {
 	UE_DEFINE_GAMEPLAY_TAG(HitFlash,"GameplayCue.HitFlash");
+}
+
+namespace Currency
+{
+	namespace Research
+	{
+		UE_DEFINE_GAMEPLAY_TAG(Atomic,"Currency.Research.Atomic");
+		UE_DEFINE_GAMEPLAY_TAG(Photon,"Currency.Research.Photon");
+	}
 }
