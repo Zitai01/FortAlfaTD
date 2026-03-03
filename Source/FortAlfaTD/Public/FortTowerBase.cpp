@@ -7,12 +7,15 @@
 #include "FortEnemyBaseCharacter.h"
 #include "FortHealthAttributeSet.h"
 #include "FortTowerAttributeSet.h"
-#include "NiagaraComponent.h"
 #include "TowerData.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Data/FortAbilityAsset.h"
+#include "ActiveGameplayEffectHandle.h"
+#include "FortPlayerState.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 // Sets default values
 AFortTowerBase::AFortTowerBase()
 {
@@ -104,11 +107,11 @@ void AFortTowerBase::BeginPlay()
 		UFortTowerAttributeSet::GetAttackSpeedAttribute(),
 		FMath::Max(1.f, TowerData->FireRate)
 	);
-
 	
-
 	// Update the sphere radius too (constructor currently uses the attribute default)
 	AttackRangeSphere->SetSphereRadius(TowerData->Range, true);
+	BindTechListener();
+	ReapplyTech();
 }
 
 // Called to bind functionality to input
@@ -474,4 +477,72 @@ bool AFortTowerBase::HasLineOfSightToTarget(AFortEnemyBaseCharacter* Target) con
 
 	// If first thing hit IS the target, we can see it
 	return Hit.GetActor() == Target;
+}
+
+void AFortTowerBase::BindTechListener()
+{
+	CachedOwnerPS = ResolveFortPlayerState();
+
+	if (CachedOwnerPS.IsValid())
+	{
+		CachedOwnerPS->OnTechChanged.AddUObject(this, &AFortTowerBase::HandleTechChanged);
+	}
+}
+
+void AFortTowerBase::UnbindTechListener()
+{
+	if (CachedOwnerPS.IsValid())
+	{
+		CachedOwnerPS->OnTechChanged.RemoveAll(this);
+	}
+}
+
+void AFortTowerBase::HandleTechChanged()
+{
+	ReapplyTech();
+}
+
+void AFortTowerBase::ReapplyTech()
+{
+	if (!FortAbilitySystemComp) return;
+	if (!CachedOwnerPS.IsValid()) return;
+	if (!TowerData) return;
+
+	// Remove previous tech GE so it doesn't stack forever
+	if (TechGEHandle.IsValid())
+	{
+		FortAbilitySystemComp->RemoveActiveGameplayEffect(TechGEHandle);
+		TechGEHandle.Invalidate();
+	}
+
+	TechGEHandle = CachedOwnerPS->ApplyTechToTowerASC(FortAbilitySystemComp, TowerData);
+
+	// IMPORTANT: if tech modifies AttackRange, refresh the sphere radius from the attribute value
+	if (AttackRangeSphere && TowerAttributeSet)
+	{
+		AttackRangeSphere->SetSphereRadius(TowerAttributeSet->GetAttackRange(), true);
+	}
+}
+
+void AFortTowerBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UnbindTechListener();
+	Super::EndPlay(EndPlayReason);
+}
+
+AFortPlayerState* AFortTowerBase::ResolveFortPlayerState() const
+{
+    // If tower actually owned by player later (build system), use it
+    if (const APlayerController* PC = Cast<APlayerController>(GetOwner()))
+        return Cast<AFortPlayerState>(PC->PlayerState);
+
+    // If owned by a pawn/character
+    if (const APawn* P = Cast<APawn>(GetOwner()))
+        return Cast<AFortPlayerState>(P->GetPlayerState());
+
+    // MVP fallback for placed towers / AIController owner
+    if (APlayerController* PC0 = UGameplayStatics::GetPlayerController(this, 0))
+        return Cast<AFortPlayerState>(PC0->PlayerState);
+
+    return nullptr;
 }

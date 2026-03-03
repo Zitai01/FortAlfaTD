@@ -43,6 +43,23 @@ namespace Currency
 	namespace Research
 	{
 		FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Atomic);
-		FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Photon);
+		FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Photonic);
+	}
+}
+
+namespace Data
+{
+	namespace Tech
+	{
+		namespace TowerRange
+		{
+			FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Multiply);
+		}
+
+		namespace TowerDamage
+		{
+			FORTALFATD_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Multiply);
+		}
+
 	}
 }

@@ -24,7 +24,14 @@ UAbilitySystemComponent* AFortPlayerState::GetAbilitySystemComponent() const
 
 void AFortPlayerState::InitTechFromTree()
 {
-	UFortTechTreeData* Tree = ActiveTechTree.Get();
+	UFortTechTreeData* Tree = ActiveTechTree.LoadSynchronous();
+	if (!Tree)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ActiveTechTree failed to load. Path=%s"),
+			*ActiveTechTree.ToSoftObjectPath().ToString());
+		return;
+	}
+//	UFortTechTreeData* Tree = ActiveTechTree.Get();
 	if (!Tree) return;
 
 	UnlockedNodeIDs.Reset();
@@ -146,6 +153,9 @@ void AFortPlayerState::BeginPlay()
 	if (HasAuthority())
 	{
 		GrantStartupAbilities();
+		InitTechFromTree();
+		AddCurrency(FGameplayTag::RequestGameplayTag(TEXT("Currency.Research.Atomic")), 999);
+		AddCurrency(FGameplayTag::RequestGameplayTag(TEXT("Currency.Research.Photonic")), 999);
 	}
 }
 

@@ -11,25 +11,22 @@
 
 #include "FortTowerBase.generated.h"
 
+class AFortPlayerState;
 // Forward declarations (keep includes light)
 class AFortEnemyBaseCharacter;
 class AFortProjectileBase;
-
 class UAbilitySystemComponent;
 class UAudioComponent;
 class UFortAbilityAsset;
 class UFortAbilitySystemComponent;
 class UFortHealthAttributeSet;
 class UFortTowerAttributeSet;
-
 class UNiagaraComponent;
 class UNiagaraSystem;
-
 class USceneComponent;
 class USphereComponent;
 class USoundBase;
 class UStaticMeshComponent;
-
 class UTowerData;
 class UGameplayAbility;
 
@@ -103,8 +100,7 @@ protected:
 
 	// LOS
 	bool HasLineOfSightToTarget(AFortEnemyBaseCharacter* Target) const;
-
-protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	// -----------------------------
 	// Combat / LOS
 	// -----------------------------
@@ -222,11 +218,18 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tower")
 	AFortEnemyBaseCharacter* CurrentTarget = nullptr;
-
-	
-
 	float TimeSinceLastShot = 0.f;
 
 	FTimerHandle TowerLogicTimerHandle;
 	FTimerHandle AudioLogicTimerHandle;
+
+private:
+	FActiveGameplayEffectHandle TechGEHandle;
+	TWeakObjectPtr<AFortPlayerState> CachedOwnerPS;
+
+	void BindTechListener();
+	void UnbindTechListener();
+	AFortPlayerState* ResolveFortPlayerState() const;
+	void ReapplyTech(); // remove old handle, apply new, refresh range sphere
+	void HandleTechChanged();
 };

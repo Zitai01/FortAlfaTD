@@ -42,6 +42,15 @@ namespace Currency
 	namespace Research
 	{
 		UE_DEFINE_GAMEPLAY_TAG(Atomic,"Currency.Research.Atomic");
-		UE_DEFINE_GAMEPLAY_TAG(Photon,"Currency.Research.Photon");
+		UE_DEFINE_GAMEPLAY_TAG(Photon,"Currency.Research.Photonic");
+	}
+}
+
+namespace Data
+{
+	namespace Tech
+	{
+		UE_DEFINE_GAMEPLAY_TAG(Atomic,"Data.Tech.TowerDamage.Multiply");
+		UE_DEFINE_GAMEPLAY_TAG(Photon,"Data.Tech.TowerRange.Multiply");
 	}
 }
