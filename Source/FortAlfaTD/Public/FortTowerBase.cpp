@@ -40,7 +40,7 @@ AFortTowerBase::AFortTowerBase()
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	AttackRangeSphere->SetGenerateOverlapEvents(true);
 	AttackRangeSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-
+	AttackRangeSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	RotatingAudioComp = CreateDefaultSubobject<UAudioComponent>("RotatingAudioComp");
 	RotatingAudioComp->SetupAttachment(RootComponent);
 	RotatingAudioComp->bAutoActivate = false;
@@ -57,7 +57,7 @@ void AFortTowerBase::BeginPlay()
 	
 	AttackRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyEnterRange);
 	AttackRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyExitRange);
-	GetWorld()->GetTimerManager().SetTimer(AudioLogicTimerHandle, this, &AFortTowerBase::AudioUpdate,0.5f,true);
+//	GetWorld()->GetTimerManager().SetTimer(AudioLogicTimerHandle, this, &AFortTowerBase::AudioUpdate,0.5f,true);
 	GetWorld()->GetTimerManager().SetTimer(TowerLogicTimerHandle, this, &AFortTowerBase::TowerUpdate,0.05f,true);
 	
 
@@ -107,11 +107,16 @@ void AFortTowerBase::BeginPlay()
 		UFortTowerAttributeSet::GetAttackSpeedAttribute(),
 		FMath::Max(1.f, TowerData->FireRate)
 	);
-	
+
+	FortAbilitySystemComp->SetNumericAttributeBase(
+	UFortTowerAttributeSet::GetAttackRangeAttribute(),
+	TowerData->Range
+	);
 	// Update the sphere radius too (constructor currently uses the attribute default)
 	AttackRangeSphere->SetSphereRadius(TowerData->Range, true);
 	BindTechListener();
 	ReapplyTech();
+	
 }
 
 // Called to bind functionality to input
@@ -124,6 +129,12 @@ void AFortTowerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AFortTowerBase::TowerUpdate()
 {
 	float DeltaTime = 0.1f;
+	
+	UE_LOG(LogTemp, Warning, TEXT("[Tower] %s Overlaps=%d Range=%f ProjSpeed=%f"),
+	*GetName(),
+	EnemiesWithInRange.Num(),
+	TowerAttributeSet->GetAttackRange(),
+	TowerAttributeSet->GetProjectileSpeed());
 	
 	if (!IsEnemyValid(CurrentTarget))
 	{
@@ -154,8 +165,6 @@ void AFortTowerBase::TowerUpdate()
 	{
 		// Laser mode: keep ability running while target is valid
 		EnsureChanneledAttackActive();
-
-		// IMPORTANT: don't run interval-based TryShoot for channeled towers
 		return;
 	}
 	TryShoot(DeltaTime);
@@ -203,7 +212,11 @@ void AFortTowerBase::OnEnemyExitRange(
 void AFortTowerBase::PredictTargetLocation( float ProjectileSpeed) 
 {
 	if (!CurrentTarget || ProjectileSpeed <= 0.f)
+	{
 		TargetPredictedLocation =  FVector::ZeroVector;
+		return;
+	}
+
 	FVector P0 = TurretMesh->GetSocketLocation("Barrel_End");
 	FVector P1 = CurrentTarget->GetActorLocation();
 	FVector V  = CurrentTarget->GetVelocity();

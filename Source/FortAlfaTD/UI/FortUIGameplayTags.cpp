@@ -50,7 +50,14 @@ namespace Data
 {
 	namespace Tech
 	{
-		UE_DEFINE_GAMEPLAY_TAG(Atomic,"Data.Tech.TowerDamage.Multiply");
-		UE_DEFINE_GAMEPLAY_TAG(Photon,"Data.Tech.TowerRange.Multiply");
+		namespace TowerDamage
+		{
+			UE_DEFINE_GAMEPLAY_TAG(Multiply,"Data.Tech.TowerDamage.Multiply");
+		}
+
+		namespace TowerRange
+		{
+			UE_DEFINE_GAMEPLAY_TAG(Multiply,"Data.Tech.TowerRange.Multiply");
+		}
 	}
 }

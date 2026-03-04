@@ -139,6 +139,16 @@ FActiveGameplayEffectHandle AFortPlayerState::ApplyTechToTowerASC(UAbilitySystem
 	if (!SpecHandle.IsValid()) return FActiveGameplayEffectHandle();
 
 	FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
+
+	static const FGameplayTag RangeMultTag  = FGameplayTag::RequestGameplayTag(TEXT("Data.Tech.TowerRange.Multiply"));
+	static const FGameplayTag DamageMultTag = FGameplayTag::RequestGameplayTag(TEXT("Data.Tech.TowerDamage.Multiply"));
+	//static const FGameplayTag SpeedMultTag  = FGameplayTag::RequestGameplayTag(TEXT("Data.Tech.TowerAttackSpeed.Multiply"));
+	//static const FGameplayTag ProjMultTag   = FGameplayTag::RequestGameplayTag(TEXT("Data.Tech.TowerProjectileSpeed.Multiply"));
+
+	Spec->SetSetByCallerMagnitude(RangeMultTag,  1.0f);
+	Spec->SetSetByCallerMagnitude(DamageMultTag, 1.0f);
+	//Spec->SetSetByCallerMagnitude(SpeedMultTag,  1.0f);
+	//Spec->SetSetByCallerMagnitude(ProjMultTag,   1.0f);
 	for (const auto& It : TagToMag)
 	{
 		Spec->SetSetByCallerMagnitude(It.Key, It.Value);

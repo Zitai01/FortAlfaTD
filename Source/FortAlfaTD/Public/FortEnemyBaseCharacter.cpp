@@ -37,8 +37,8 @@ void AFortEnemyBaseCharacter::BeginPlay()
 	MeleeRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AFortEnemyBaseCharacter::OnMeleeEndOverlap);
 	if (HealthSet)
 	{
-		HealthSet->SetMaxHealth(2000);
-		HealthSet->SetHealth(2000);
+		HealthSet->SetMaxHealth(500);
+		HealthSet->SetHealth(500);
 	}
 }
 
