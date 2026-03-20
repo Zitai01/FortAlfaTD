@@ -15,7 +15,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
-
+#include "FMODAudioComponent.h"
 AFortAlfaTDCharacter::AFortAlfaTDCharacter()
 {
 	// Set size for player capsule

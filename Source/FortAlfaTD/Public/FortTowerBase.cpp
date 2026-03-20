@@ -334,7 +334,7 @@ void AFortTowerBase::RotateToFaceEnemy(float DeltaTime)
 	if (AimDirWorld.IsNearlyZero()) return;
 
 
-	float DesiredWorldYaw = DirYawWorld.Rotation().Yaw - 90.f;
+	float DesiredWorldYaw = DirYawWorld.Rotation().Yaw - 90;
 
 
 	const USceneComponent* Parent = MountMesh->GetAttachParent();

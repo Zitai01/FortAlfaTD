@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EventFolder" id="{2131dd6b-2898-41bb-aa92-25fb18f8de29}">
+		<property name="name">
+			<value>CIWS</value>
+		</property>
+		<relationship name="folder">
+			<destination>{e3eb1b86-5dbc-4d55-ab64-f4a3d8eefa53}</destination>
+		</relationship>
+	</object>
+</objects>

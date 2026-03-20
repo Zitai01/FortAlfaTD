@@ -27,7 +27,7 @@ public class FortAlfaTD : ModuleRules
 			"CommonInput"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] { "FMODStudio" });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"FortAlfaTD",
