@@ -29,4 +29,9 @@ void UFortGA_ShootGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
  void UFortGA_ShootGun::PerformShoot( AFortTowerBase* Tower)
 {
 	Super::PerformShoot(Tower);
+	
+	if (Tower)
+	{
+		Tower->NotifyShotFiredAudio();
+	}
 }

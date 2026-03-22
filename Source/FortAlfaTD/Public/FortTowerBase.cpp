@@ -13,6 +13,7 @@
 #include "Components/SphereComponent.h"
 #include "Data/FortAbilityAsset.h"
 #include "ActiveGameplayEffectHandle.h"
+#include "FMODBlueprintStatics.h"
 #include "FortPlayerState.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -57,7 +58,7 @@ void AFortTowerBase::BeginPlay()
 	
 	AttackRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyEnterRange);
 	AttackRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AFortTowerBase::OnEnemyExitRange);
-//	GetWorld()->GetTimerManager().SetTimer(AudioLogicTimerHandle, this, &AFortTowerBase::AudioUpdate,0.5f,true);
+	GetWorld()->GetTimerManager().SetTimer(AudioLogicTimerHandle, this, &AFortTowerBase::AudioUpdate,0.05f,true);
 	GetWorld()->GetTimerManager().SetTimer(TowerLogicTimerHandle, this, &AFortTowerBase::TowerUpdate,0.05f,true);
 	
 
@@ -448,7 +449,18 @@ void AFortTowerBase::TryShoot(float DeltaTime)
 
 void AFortTowerBase::AudioUpdate()
 {
+	const bool bShouldLoop =
+		bUseLoopedGunFireAudio &&
+		(GetWorld()->GetTimeSeconds() - LastShotAudioTime <= GunLoopHoldSeconds);
 
+	if (bShouldLoop && !bAudioFiringActive)
+	{
+		StartFireLoopAudio();
+	}
+	else if (!bShouldLoop && bAudioFiringActive)
+	{
+		StopFireLoopAudio(true);
+	}
 }
 bool AFortTowerBase::HasLineOfSightToTarget(AFortEnemyBaseCharacter* Target) const
 {
@@ -558,4 +570,80 @@ AFortPlayerState* AFortTowerBase::ResolveFortPlayerState() const
         return Cast<AFortPlayerState>(PC0->PlayerState);
 
     return nullptr;
+}
+
+bool AFortTowerBase::ShouldHaveLoopedFireAudio() const
+{
+	if (bIsChanneledAttack)
+	{
+		return FortAbilitySystemComp &&
+			   FortAbilitySystemComp->HasMatchingGameplayTag(LaserFiringStateTag);
+	}
+
+	const UWorld* World = GetWorld();
+	if (!World) return false;
+
+	return (World->GetTimeSeconds() - LastShotAudioTime) <= GunLoopHoldSeconds;
+}
+
+void AFortTowerBase::NotifyShotFiredAudio()
+{
+	if (UWorld* World = GetWorld())
+	{
+		LastShotAudioTime = World->GetTimeSeconds();
+	}
+
+	// slow guns / cannon: play discrete shot
+	if (!FireLoopEvent && FireOneShotEvent)
+	{
+		UFMODBlueprintStatics::PlayEventAtLocation(
+			this,
+			FireOneShotEvent,
+			TurretMesh && TurretMesh->DoesSocketExist("Barrel_End")
+				? TurretMesh->GetSocketTransform("Barrel_End")
+				:GetActorTransform(),
+			true
+		);
+	}
+}
+
+void AFortTowerBase::StartFireLoopAudio()
+{
+	if (bAudioFiringActive || !FireLoopEvent) return;
+
+	bAudioFiringActive = true;
+
+	FireLoopAudioComp = UFMODBlueprintStatics::PlayEventAttached(
+		FireLoopEvent,
+		TurretMesh ? TurretMesh : GetRootComponent(),
+		TEXT("Barrel_End"),
+		FVector::ZeroVector,
+		EAttachLocation::SnapToTarget,
+		true,
+		true,
+		true
+	);
+}
+
+void AFortTowerBase::StopFireLoopAudio(bool bPlayStopEvent)
+{
+	if (!bAudioFiringActive) return;
+
+	bAudioFiringActive = false;
+
+	if (FireLoopAudioComp)
+	{
+		FireLoopAudioComp->Stop();
+		FireLoopAudioComp = nullptr;
+	}
+
+	if (bPlayStopEvent && FireLoopStopEvent)
+	{
+		UFMODBlueprintStatics::PlayEventAtLocation(
+			this,
+			FireLoopStopEvent,
+			GetActorTransform(),
+			true
+		);
+	}
 }

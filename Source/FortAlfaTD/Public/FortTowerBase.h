@@ -29,6 +29,8 @@ class USoundBase;
 class UStaticMeshComponent;
 class UTowerData;
 class UGameplayAbility;
+class UFMODEvent;
+class UFMODAudioComponent;
 
 UCLASS()
 class FORTALFATD_API AFortTowerBase : public APawn, public IAbilitySystemInterface
@@ -37,7 +39,7 @@ class FORTALFATD_API AFortTowerBase : public APawn, public IAbilitySystemInterfa
 
 public:
 	AFortTowerBase();
-
+	
 	// APawn
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -55,6 +57,8 @@ public:
 	FORCEINLINE UFortTowerAttributeSet* GetTowerAttributes() const { return TowerAttributeSet; }
 	FORCEINLINE UStaticMeshComponent* GetTurretMesh() const { return TurretMesh; }
 
+	void NotifyShotFiredAudio();
+	
 	// Range callbacks
 	UFUNCTION()
 	void OnEnemyEnterRange(
@@ -208,6 +212,30 @@ protected:
 	bool bRotationAudioPlaying = false;
 	float MountRotationYawDeg = 0.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio|FMOD")
+	TObjectPtr<UFMODEvent> FireOneShotEvent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio|FMOD")
+	TObjectPtr<UFMODEvent> FireLoopEvent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio|FMOD")
+	TObjectPtr<UFMODEvent> FireLoopStopEvent = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio|FMOD")
+	bool bUseLoopedGunFireAudio = false;
+	
+	UPROPERTY(Transient)
+	TObjectPtr<UFMODAudioComponent> FireLoopAudioComp = nullptr;
+
+	UPROPERTY(Transient)
+	bool bAudioFiringActive = false;
+
+	UPROPERTY(Transient)
+	float LastShotAudioTime = -1000.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio|FMOD")
+	float GunLoopHoldSeconds = 0.12f;
+	
 	// -----------------------------
 	// Runtime state
 	// -----------------------------
@@ -232,4 +260,10 @@ private:
 	AFortPlayerState* ResolveFortPlayerState() const;
 	void ReapplyTech(); // remove old handle, apply new, refresh range sphere
 	void HandleTechChanged();
+
+	//Audio Helpers
+
+	void StartFireLoopAudio();
+	void StopFireLoopAudio(bool bPlayStopEvent = true);
+	bool ShouldHaveLoopedFireAudio() const;
 };

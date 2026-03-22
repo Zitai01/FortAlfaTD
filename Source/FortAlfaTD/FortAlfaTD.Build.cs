@@ -24,10 +24,10 @@ public class FortAlfaTD : ModuleRules
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-			"CommonInput"
+			"CommonInput", "FMODStudio"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "FMODStudio" });
+		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"FortAlfaTD",
