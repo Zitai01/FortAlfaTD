@@ -17,6 +17,8 @@ class FORTALFATD_API AFortEnemyBaseFlyingCharacter : public AFortEnemyBaseCharac
 public:
 	AFortEnemyBaseFlyingCharacter();
 
+	virtual void Tick(float DeltaSeconds) override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -54,4 +56,17 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Flying")
 	bool IsFlying() const { return bIsFlying; }
+	
+	UPROPERTY(BlueprintReadOnly, Category="Animation")
+	float Speed;
+
+	UPROPERTY(BlueprintReadOnly, Category="Animation")
+	float VerticalSpeed;
+
+	UPROPERTY(BlueprintReadOnly, Category="Animation")
+	bool bIsGrounded;
+
+	UPROPERTY(BlueprintReadOnly, Category="Animation")
+	bool bIsFalling;
+
 };

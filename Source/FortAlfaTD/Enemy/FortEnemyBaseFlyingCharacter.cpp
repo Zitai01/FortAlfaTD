@@ -6,7 +6,27 @@
 
 AFortEnemyBaseFlyingCharacter::AFortEnemyBaseFlyingCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AFortEnemyBaseFlyingCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	FVector Velocity = GetVelocity();
+
+	Speed = FVector(Velocity.X, Velocity.Y, 0).Size();
+	VerticalSpeed = Velocity.Z;
+
+	if (GetCharacterMovement())
+	{
+		bIsGrounded = GetCharacterMovement()->IsMovingOnGround();
+		bIsFalling  = GetCharacterMovement()->IsFalling();
+	}
+
+	// Your own logic
+	bIsFlying = !bIsGrounded && !bIsFalling; // or custom flag
+	
 }
 
 void AFortEnemyBaseFlyingCharacter::BeginPlay()

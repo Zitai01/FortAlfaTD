@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{141d157b-daa9-45c6-8c74-7b20db019c0b}">
+		<property name="assetPath">
+			<value>DarkWestMusic/WildWest_Desert_Dust.WAV</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>218.66668934240363</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8a63fde2-9544-4ec9-88a9-1e07725afa50}</destination>
+		</relationship>
+	</object>
+</objects>

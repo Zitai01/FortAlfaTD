@@ -53,7 +53,7 @@ protected:
 	float ZoomSpeed = 300.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
-	float MinZoom = 500.f;
+	float MinZoom = 50.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Camera")
 	float MaxZoom = 6000.f;
@@ -85,10 +85,10 @@ protected:
 	float CameraPitchSpeed = 120.f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Camera")
-	float MinPitch = -80.f;
+	float MinPitch = -130.f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Camera")
-	float MaxPitch = -15.f;
+	float MaxPitch = 50.f;
 public:
 
 	/** Constructor */

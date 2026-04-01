@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{d03df959-cfc3-4b95-9c22-eb61666f5ec9}">
+		<property name="assetPath">
+			<value>DarkWestMusic/WildWest_Moving_On.WAV</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>201.60002267573697</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8a63fde2-9544-4ec9-88a9-1e07725afa50}</destination>
+		</relationship>
+	</object>
+</objects>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{ef82c8b1-e507-4c9a-8ac6-9fee26ca5d5e}">
+		<property name="assetPath">
+			<value>DarkWestMusic/WildWest2_The_Gang.WAV</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>219.69231292517006</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{8a63fde2-9544-4ec9-88a9-1e07725afa50}</destination>
+		</relationship>
+	</object>
+</objects>
